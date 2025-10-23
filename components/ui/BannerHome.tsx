@@ -53,21 +53,21 @@ export default function BannerHome() {
       description: "Trabalhos acadêmicos submetidos por estudantes.",
       content: "Acesse monografias organizadas por curso e tema.",
       icon: <FileText className="w-6 h-6 text-green-600" />,
-      url: "/monografias",
+      url: "/user/books",
     },
     {
       title: "Projetos",
       description: "Projetos finais e iniciativas acadêmicas patrocinados.",
       content: "Consulte projetos desenvolvidos em diversos cursos.",
       icon: <FilePlus className="w-6 h-6 text-green-600" />,
-      url: "/projetos",
+      url: "/user/books",
     },
     {
       title: "Artigos Científicos",
       description: "Pesquisas e artigos de revistas científicas.",
       content: "Leia artigos científicos publicados por docentes e alunos.",
       icon: <FlaskConical className="w-6 h-6 text-green-600" />,
-      url: "/artigos",
+      url: "/user/books",
     },
   ];
 

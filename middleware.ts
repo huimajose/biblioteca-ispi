@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/books/(.*)",
   "/api/books/count(.*)",
   "/api/user/count(.*)",
+  "/user/reader(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

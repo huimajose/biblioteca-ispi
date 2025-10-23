@@ -53,7 +53,7 @@ export default function LibraryHeader() {
             <Button variant="ghost">Repositorio</Button>
           </Link>
           {/* 📄 Monografias */}
-          <Link href="/contactos">
+          <Link href="/contact">
             <Button variant="ghost">Contactos</Button>
           </Link>
           <Link href="/faq">
