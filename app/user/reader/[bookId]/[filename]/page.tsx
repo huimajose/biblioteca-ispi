@@ -19,7 +19,7 @@ export default function ReaderPage() {
   return (
     <div className="flex flex-col items-center p-4">
       <h1 className="text-xl font-semibold mb-4">Leitura do Livro</h1>
-      <PdfViewer url={filePath} watermarkText="Usuário: João Silva - 2025-06-07" />
+      <PdfViewer url={filePath} watermarkText="" />
     </div>
   );
 }
