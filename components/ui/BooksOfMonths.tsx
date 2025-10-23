@@ -44,48 +44,46 @@ export default function RecentBooks() {
         <span className="text-xs text-gray-500"> (últimos 7 dias)</span>
       </label>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-        {recentBooks.map((book) => (
-          <Link key={book.id} href={`/book/${book.id}`}>
-            <Card className="cursor-pointer hover:shadow-lg transition flex flex-col h-[320px]">
-              <div className="relative w-full h-48">
-                {book.cover ? (
-                  // ✅ Se tiver capa vinda do banco (ImageKit)
-                  <ImageKitProvider publicKey={publicKey} urlEndpoint={urlEndpoint}>
+      <ImageKitProvider publicKey={publicKey} urlEndpoint={urlEndpoint}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+          {recentBooks.map((book) => (
+            <Link key={book.id} href={`/book/${book.id}`}>
+              <Card className="cursor-pointer hover:shadow-lg transition flex flex-col h-[320px]">
+                <div className="relative w-full h-48">
+                  {book.cover ? (
+                    // ✅ Capa do banco (ImageKit)
                     <IKImage
                       path={book.cover}
                       alt={book.title}
-                      width={300}
-                      height={400}
-                      className="rounded-lg shadow-lg object-cover"
+                      transformation={[{ width: 300, height: 400 }]}
+                      className=" object-cover w-full h-full"
                     />
-                  </ImageKitProvider>
-                ) : (
-                  // ✅ Se não tiver capa, mostra imagem padrão local
-                  <Image
-                    src="/cover_2.jpeg"
-                    alt="Capa padrão"
-                    width={300}
-                    height={400}
-                    className="rounded-lg shadow-lg object-cover"
-                  />
-                )}
-              </div>
-
-              <CardContent className="p-2 flex-1 flex flex-col justify-between">
-                <div>
-                  <p className="text-sm font-semibold truncate">{book.title}</p>
-                  <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                  ) : (
+                    // ✅ Capa padrão local
+                    <Image
+                      src="/cover_2.jpeg"
+                      alt="Capa padrão"
+                      fill
+                      className="object-cover "
+                    />
+                  )}
                 </div>
-              </CardContent>
 
-              <CardFooter className="p-2">
-                <p className="text-xs text-muted-foreground truncate">{book.genre}</p>
-              </CardFooter>
-            </Card>
-          </Link>
-        ))}
-      </div>
+                <CardContent className="p-2 flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-sm font-semibold truncate">{book.title}</p>
+                    <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                  </div>
+                </CardContent>
+
+                <CardFooter className="p-2">
+                  <p className="text-xs text-muted-foreground truncate">{book.genre}</p>
+                </CardFooter>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </ImageKitProvider>
     </div>
   );
 }
