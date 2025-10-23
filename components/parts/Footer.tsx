@@ -18,14 +18,10 @@ const Footer: React.FC = () => {
               </Link>
             </li>
             
-            <li>
-              <Link href="/services" className="hover:text-gray-300">
-                Serviços
-              </Link>
-            </li>
+           
             <li>
               <Link href="/contact" className="hover:text-gray-300">
-                Contato
+                Contatos
               </Link>
             </li>
             
