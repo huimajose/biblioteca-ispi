@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
             </li>
             
             <li>
-              <Link href="/terms-conditions" className="hover:text-gray-300">
+              <Link href="/terms" className="hover:text-gray-300">
                 Termos e Condições
               </Link>
             </li>
