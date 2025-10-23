@@ -294,7 +294,7 @@ export async function rentBook(bookId: number, userId: string) {
     const availableBooks = await db
       .select()
       .from(physicalBooks)
-      .where(and(eq(physicalBooks.bookId, bookId), eq(physicalBooks.borrowed, false)))
+      .where(eq(physicalBooks.bookId, bookId))
       .limit(1);
 
 

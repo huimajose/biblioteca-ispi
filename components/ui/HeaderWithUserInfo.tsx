@@ -49,7 +49,7 @@ export default function LibraryHeader() {
             <Button variant="ghost">Livros</Button>
           </Link>
           {/* 📄 Monografias */}
-          <Link href="/monografias">
+          <Link href="/user/books">
             <Button variant="ghost">Repositorio</Button>
           </Link>
           {/* 📄 Monografias */}
