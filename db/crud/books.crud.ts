@@ -30,6 +30,7 @@ export const createBooks = async (isbn: string, title: string, author: string, g
   }
 };
 
+/*
 export async function readBooks(
   page: number = 1,
   pageSize: number = 10,
@@ -77,6 +78,66 @@ export async function readBooks(
     totalPages: Math.ceil(total[0].count / pageSize)
   };
 }
+*/
+
+export async function readBooks(
+  page: number = 1,
+  pageSize: number = 10,
+  sortField: string = "title",
+  sortOrder: string = "asc",
+  searchQuery: string = ""
+) {
+  const offset = (page - 1) * pageSize;
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const searchPattern = `%${normalizedQuery}%`;
+
+  // 🔹 Verifica se é busca por ID (número exato)
+  const isNumericSearch = /^\d+$/.test(searchQuery);
+
+  // 🔹 Filtro case-insensitive
+  const whereClause = isNumericSearch
+    ? eq(books.id, Number(searchQuery))
+    : searchQuery
+    ? sql`
+        LOWER(${books.title}) LIKE ${searchPattern} OR 
+        LOWER(${books.author}) LIKE ${searchPattern} OR 
+        LOWER(${books.isbn}) LIKE ${searchPattern} OR
+        LOWER(${books.genre}) LIKE ${searchPattern}
+      `
+    : undefined;
+
+  // 🔹 Ordenação dinâmica
+  const orderByClause =
+    sortOrder === "desc"
+      ? desc(books[sortField as keyof typeof books.$inferSelect])
+      : asc(books[sortField as keyof typeof books.$inferSelect]);
+
+  // 🔹 Busca paginada e total em paralelo
+  const [booksList, total] = await Promise.all([
+    db
+      .select()
+      .from(books)
+      .where(whereClause)
+      .orderBy(orderByClause)
+      .limit(pageSize)
+      .offset(offset),
+
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(books)
+      .where(whereClause),
+  ]);
+
+  const totalCount = Number(total[0]?.count || 0);
+
+  return {
+    books: booksList,
+    totalBooks: totalCount,
+    totalPages: Math.ceil(totalCount / pageSize),
+  };
+}
+
+
 
 export const updateBooks = async (id: number, totalCopies: number, availableCopies: number) => {
   try {

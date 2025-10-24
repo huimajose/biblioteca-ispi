@@ -103,7 +103,7 @@ export default function BooksPageContent() {
     const params = new URLSearchParams(searchParams);
     params.set("sort", field);
     params.set("order", field === sortField && sortOrder === "asc" ? "desc" : "asc");
-    router.push(`/admin/books?${params.toString()}`);
+    router.push(`/user/books?${params.toString()}`);
   };
 
   const handleSearch = (value: string) => {
@@ -112,7 +112,7 @@ export default function BooksPageContent() {
     if (value) params.set("search", value);
     else params.delete("search");
     params.set("page", "1"); // sempre volta para a página 1
-    router.push(`/admin/books?${params.toString()}`);
+    router.push(`/user/books?${params.toString()}`);
   };
 
   const totalPages = Math.ceil(totalBooks / pageSize);
