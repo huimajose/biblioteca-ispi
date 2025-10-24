@@ -119,7 +119,7 @@ export default function BooksPageContent() {
                         <ArrowUpDown className="h-4 w-4 text-green-600" />
                         Novos
                     </Button>
-                    <div className="relative w-64">
+                    <div className="relative w-[500px]">
                         <Input
                             type="text"
                             placeholder="Procurar livros..."
