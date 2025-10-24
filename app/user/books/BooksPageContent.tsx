@@ -15,6 +15,8 @@ import { Search, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/ui/pagination";
 
+import { useToast } from "@/components/ui/ToastContext";
+
 interface Book {
   id: number;
   title: string;
@@ -39,7 +41,7 @@ type SortOrder = "asc" | "desc";
 export default function BooksPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  const { showToast } = useToast();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalBooks, setTotalBooks] = useState(0);
@@ -118,6 +120,7 @@ export default function BooksPageContent() {
   const totalPages = Math.ceil(totalBooks / pageSize);
 
   return (
+    
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-green-600">Todos os livros</h1>
@@ -212,7 +215,9 @@ export default function BooksPageContent() {
                           body: JSON.stringify({ userId }),
                         });
                         if (res.ok) {
-                          alert("Livro alugado com sucesso!");
+                          
+                          showToast('Livro alugado com sucesso!', 'success');
+                          
                           fetchBooks();
                         } else {
                           const data = await res.json();
@@ -237,5 +242,6 @@ export default function BooksPageContent() {
         </div>
       )}
     </div>
+
   );
 }

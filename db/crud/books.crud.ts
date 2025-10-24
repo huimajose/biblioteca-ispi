@@ -393,9 +393,9 @@ export async function rentBook(bookId: number, userId: string) {
       throw new Error("Ocorreu um erro actualizar as informações do livro na tabela.");
     }
 
-    const trans_result = createTransactions(bookId, userId, userId, "borrowed", getCurrentDate(), getReturnDatePlus7Days());
+    const trans_result = await createTransactions(bookId, userId, userId, "borrowed", getCurrentDate(), getReturnDatePlus7Days());
 
-    if (trans_result) {
+    if (!trans_result) {
       throw new Error("Ocorreu um erro ao criar a transação de empréstimo.");
     }
 

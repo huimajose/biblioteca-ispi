@@ -3,7 +3,14 @@ import { physicalBooks, transactions } from "../schema";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 
-export const createTransactions = async (physicalBookId: number, userId: string, adminId: string, status: string, borrowedDate: any, returnedDate: string | undefined) => {
+export const createTransactions = async (
+  physicalBookId: number,
+  userId: string,
+  adminId: string,
+  status: string,
+  borrowedDate: any,
+  returnedDate: string | undefined
+) => {
   const transaction: typeof transactions.$inferInsert = {
     physicalBookId,
     userId,
@@ -12,13 +19,24 @@ export const createTransactions = async (physicalBookId: number, userId: string,
     borrowedDate,
     returnedDate,
   };
+
   try {
-    const res = await db.insert(transactions).values(transaction);
+    const [res] = await db.insert(transactions).values(transaction).returning({
+      tid: transactions.tid,
+      physicalBookId: transactions.physicalBookId,
+      status: transactions.status,
+      borrowedDate: transactions.borrowedDate,
+      returnedDate: transactions.returnedDate,
+    });
+
     console.log("createTransactions:", res);
+    return res;
   } catch (error) {
-    console.log("Something Went Wrong :", error);
+    console.error("Something Went Wrong in createTransactions:", error);
+    return null;
   }
 };
+
 
 export async function readTransactions() {
   try {
