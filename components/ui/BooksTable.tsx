@@ -307,12 +307,12 @@ const BooksTable = ({ initialBooks, totalPages, totalBooks, currentPage }: Books
   return (
     <div className="w-full mt-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Livros</h2>
+        <h2 className="text-2xl font-bold text-green-600">Livros</h2>
         <div className="flex gap-2">
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="bg-green-600">
+              <Plus className="mr-2 h-4 w-4 " />
               Add Livro
             </Button>
           </DialogTrigger>

@@ -22,8 +22,10 @@ export default async function AdminDashboard() {
   // Calculate available books
   const availableBooks = books.reduce((sum, book) => sum + book.availableCopies, 0);
 
-  // Calculate active borrowings
-  const activeBorrowings = transactions.filter(t => t.status === "borrowed").length;
+  // Calculate active borrowings annd accvpeted books
+  const activeBorrowings = transactions.filter(t =>
+  ["borrowed", "accepted"].includes(t.status)
+).length;
 
   return (
     <div className="p-6">
