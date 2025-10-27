@@ -8,7 +8,7 @@ import ImageUpload from "@/components/ui/BookUpload";
 import { Pagination } from "@/components/ui/pagination";
 import { BookCover } from "@/components/ui/BookCover";
 import { useState, useEffect } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Plus, Trash2, Copy, Save } from "lucide-react";
+import { ArrowUpDown, Search, ArrowUp, ArrowDown, Plus, Trash2, Copy, Save } from "lucide-react";
 import { removePhysicalBook, addPhysicalBook } from "@/app/admin/allbooks/actions";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -90,6 +90,11 @@ const BooksTable = ({ initialBooks, totalPages, totalBooks, currentPage }: Books
   const [isDigital, setIsDigital] = useState(false);
 
 
+  const [searchQuery, setSearchQuery] = useState("");
+ const handleSearch = (query: string) => {
+  setSearchQuery(query);
+};
+
 
   const handleToggle = (checked: boolean) => {
     setIsDigital(checked);
@@ -108,22 +113,38 @@ const BooksTable = ({ initialBooks, totalPages, totalBooks, currentPage }: Books
     }
   };
 
-  const sortedBooks = useMemo(() => {
-    return [...books].sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
+  const filteredBooks = useMemo(() => {
+  if (!searchQuery.trim()) return books;
 
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-      }
+  const lowerQuery = searchQuery.toLowerCase();
+  return books.filter(
+    (book) =>
+      book.title.toLowerCase().includes(lowerQuery) ||
+      book.author.toLowerCase().includes(lowerQuery) ||
+      book.genre.toLowerCase().includes(lowerQuery) ||
+      book.isbn.toLowerCase().includes(lowerQuery)
+  );
+}, [books, searchQuery]);
 
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
-      }
+const sortedBooks = useMemo(() => {
+  return [...filteredBooks].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
 
-      return 0;
-    });
-  }, [books, sortField, sortDirection]);
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+    }
+
+    return 0;
+  });
+}, [filteredBooks, sortField, sortDirection]);
+
 
   const handleUpdate = async (book: Book) => {
     setSelectedBook(book);
@@ -326,6 +347,16 @@ const BooksTable = ({ initialBooks, totalPages, totalBooks, currentPage }: Books
           <Button variant="outline" onClick={() => { setSortField("id"); setSortDirection("desc"); }}>
             Novos
           </Button>
+          <div className="relative w-[300px]">
+            <Input
+              type="text"
+              placeholder="Procurar livros..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
         </div>
       </div>
 
