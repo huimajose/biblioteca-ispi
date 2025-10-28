@@ -15,6 +15,7 @@ import { Search, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/ui/pagination";
 import { getCategoryName } from "@/utils/categoryMapper";
+import clsx from "clsx";
 
 import { useToast } from "@/components/ui/ToastContext";
 
@@ -145,36 +146,66 @@ export default function BooksPageContent() {
           {/* Botões de categorias */}
           <div className="flex gap-2">
             <Button
-              variant={category === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => router.push("/user/books")}
-            >
-              Todos
-            </Button>
+  variant="outline"
+  size="sm"
+  className={clsx(
+    "transition-colors",
+    category === null
+      ? "bg-green-600 text-white hover:bg-green-700"
+      : "bg-white text-gray-700 hover:bg-gray-100 border"
+  )}
+  onClick={() => router.push("/user/books")}
+>
+  Todos
+</Button>
             <Button
-              variant={category === "1" ? "default" : "outline"}
+              variant="outline"
               size="sm"
+              className={clsx(
+              "transition-colors",
+              category === "1"
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : "bg-white text-gray-700 hover:bg-gray-100 border"
+            )}
               onClick={() => router.push("/user/books?category=1")}
             >
               Livros
             </Button>
             <Button
-              variant={category === "2" ? "default" : "outline"}
+              variant="outline"
               size="sm"
+              className={clsx(
+              "transition-colors",
+              category === "2"
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : "bg-white text-gray-700 hover:bg-gray-100 border"
+            )}
               onClick={() => router.push("/user/books?category=2")}
             >
               Monografias
             </Button>
              <Button
-              variant={category === "3" ? "default" : "outline"}
+              variant="outline"
               size="sm"
+              className={clsx(
+              "transition-colors",
+              category === "3"
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : "bg-white text-gray-700 hover:bg-gray-100 border"
+            )}
               onClick={() => router.push("/user/books?category=3")}
             >
               Projetos
             </Button>
             <Button
-              variant={category === "4" ? "default" : "outline"}
+              variant="outline"
               size="sm"
+              className={clsx(
+              "transition-colors",
+              category === "4"
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : "bg-white text-gray-700 hover:bg-gray-100 border"
+            )}
               onClick={() => router.push("/user/books?category=4")}
             >
               Artigos Ciêntíficos
