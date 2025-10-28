@@ -74,3 +74,21 @@ export const insertUser = async (userData: any) => {
     throw new Error("Falha ao inserir usuário no banco");
   }
 };
+
+
+// 🆕 NOVA FUNÇÃO: Atualizar a role do usuário
+export const updateUserRole = async (clerkId: string, newRole: string) => {
+  try {
+    const res = await db
+      .update(users)
+      .set({ role: newRole })
+      .where(eq(users.clerkId, clerkId))
+      .returning();
+
+    console.log(`✅ Role atualizada para ${newRole} no usuário ${clerkId}`);
+    return res;
+  } catch (error: any) {
+    console.error("❌ Erro ao atualizar role do usuário:", error.message || error);
+    throw new Error("Falha ao atualizar role do usuário");
+  }
+};
