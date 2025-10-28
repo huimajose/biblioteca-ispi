@@ -11,16 +11,45 @@ export const createTransactions = async (
   borrowedDate: any,
   returnedDate: string | undefined
 ) => {
-  const transaction: typeof transactions.$inferInsert = {
-    physicalBookId,
-    userId,
-    adminId,
-    status,
-    borrowedDate,
-    returnedDate,
-  };
-
   try {
+    const existingTransactions = await db
+      .select({
+        tid: transactions.tid,
+        status: transactions.status,
+        returnedDate: transactions.returnedDate,
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.physicalBookId, physicalBookId),
+          eq(transactions.userId, userId),
+          sql`${transactions.status} IN ('accepted','borrowed', 'REQUESTED')`
+        )
+      );
+
+    if (existingTransactions.length > 0) {
+      const active = existingTransactions[0];
+      if (active.returnedDate && new Date(active.returnedDate) > new Date()) {
+        // ⚠️ Retorna com código 403 para o frontend detectar o erro
+        return Response.json(
+          {
+            error:
+              "Já existe uma transação ativa para este livro e o prazo ainda não expirou.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    const transaction: typeof transactions.$inferInsert = {
+      physicalBookId,
+      userId,
+      adminId,
+      status,
+      borrowedDate,
+      returnedDate,
+    };
+
     const [res] = await db.insert(transactions).values(transaction).returning({
       tid: transactions.tid,
       physicalBookId: transactions.physicalBookId,
@@ -30,12 +59,17 @@ export const createTransactions = async (
     });
 
     console.log("createTransactions:", res);
-    return res;
+    return Response.json(res, { status: 201 });
   } catch (error) {
     console.error("Something Went Wrong in createTransactions:", error);
-    return null;
+    return Response.json(
+      { error: "Erro interno ao criar transação." },
+      { status: 500 }
+    );
   }
 };
+
+
 
 
 export async function readTransactions() {

@@ -85,34 +85,47 @@ export async function readBooks(
   pageSize: number = 10,
   sortField: string = "title",
   sortOrder: string = "asc",
-  searchQuery: string = ""
+  searchQuery: string = "",
+  category?: number | null
 ) {
   const offset = (page - 1) * pageSize;
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const searchPattern = `%${normalizedQuery}%`;
 
-  // 🔹 Verifica se é busca por ID (número exato)
   const isNumericSearch = /^\d+$/.test(searchQuery);
 
-  // 🔹 Filtro case-insensitive
-  const whereClause = isNumericSearch
+  // 🔍 Condição de busca
+  const searchCondition = isNumericSearch
     ? eq(books.id, Number(searchQuery))
     : searchQuery
     ? sql`
         LOWER(${books.title}) LIKE ${searchPattern} OR 
         LOWER(${books.author}) LIKE ${searchPattern} OR 
-        LOWER(${books.isbn}) LIKE ${searchPattern} OR
-        LOWER(${books.genre}) LIKE ${searchPattern}
+        LOWER(${books.isbn}) LIKE ${searchPattern}
       `
     : undefined;
 
-  // 🔹 Ordenação dinâmica
+  // 🔹 Condição de categoria
+  const categoryCondition =
+    category && category.trim() !== ""
+      ? /^\d+$/.test(category)
+        ? eq(books.genre_id, Number(category)) // se for número
+        : sql`LOWER(${books.genre}) = LOWER(${category})` // se for texto
+      : undefined;
+
+  // 🔹 Combina condições
+  const whereClause =
+    searchCondition && categoryCondition
+      ? and(searchCondition, categoryCondition)
+      : searchCondition || categoryCondition;
+
+  // 🔹 Ordenação
   const orderByClause =
     sortOrder === "desc"
       ? desc(books[sortField as keyof typeof books.$inferSelect])
       : asc(books[sortField as keyof typeof books.$inferSelect]);
 
-  // 🔹 Busca paginada e total em paralelo
+  // 🔹 Busca e total em paralelo
   const [booksList, total] = await Promise.all([
     db
       .select()
@@ -136,7 +149,6 @@ export async function readBooks(
     totalPages: Math.ceil(totalCount / pageSize),
   };
 }
-
 
 
 export const updateBooks = async (id: number, totalCopies: number, availableCopies: number) => {

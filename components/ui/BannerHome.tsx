@@ -46,28 +46,28 @@ export default function BannerHome() {
       description: "Explore nossa coleção de livros digitais e físicos.",
       content: "Encontre livros para leitura ou consulta na biblioteca.",
       icon: <BookOpen className="w-6 h-6 text-green-600" />,
-      url: "/user/books",
+      url: "/user/books?category=1",
     },
     {
       title: "Monografias",
       description: "Trabalhos acadêmicos submetidos por estudantes.",
       content: "Acesse monografias organizadas por curso e tema.",
       icon: <FileText className="w-6 h-6 text-green-600" />,
-      url: "/user/books",
+      url: "/user/books?category=2",
     },
     {
       title: "Projetos",
       description: "Projetos finais e iniciativas acadêmicas patrocinados.",
       content: "Consulte projetos desenvolvidos em diversos cursos.",
       icon: <FilePlus className="w-6 h-6 text-green-600" />,
-      url: "/user/books",
+      url: "/user/books?category=3",
     },
     {
       title: "Artigos Científicos",
       description: "Pesquisas e artigos de revistas científicas.",
       content: "Leia artigos científicos publicados por docentes e alunos.",
       icon: <FlaskConical className="w-6 h-6 text-green-600" />,
-      url: "/user/books",
+      url: "/user/books?category=4",
     },
   ];
 

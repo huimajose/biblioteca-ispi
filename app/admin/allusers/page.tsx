@@ -13,24 +13,30 @@ const Page = () => {
   const getUsers = async () => {
     const fetchedUsers = await getUsersWithClerk(); // Call the server function
     const sortedUsers = fetchedUsers.sort((a: any, b: any) => {
-      const roleA = a.role || "user";
-      const roleB = b.role || "user";
+      const roleA = a.role || "Estudante";
+      const roleB = b.role || "Estudante";
       return roleA === "admin" && roleB !== "admin" ? -1 : roleA !== "admin" && roleB === "admin" ? 1 : 0;
     });
 
     setUsers(sortedUsers); // Update the state with fetched data
   };
 
+  console.log("User encontrados: ",users)
   // Fetch users on component mount
   useEffect(() => {
     getUsers();
   }, []); // Empty dependency array means it runs only once when the component mounts
 
   // Handle role change and refetch updated users
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    await changeRole(userId, newRole); // Call the server function to change role
-    getUsers(); // Refetch the users after role change
-  };
+const handleRoleChange = async (userId: string, newRole: string) => {
+  try {
+    await changeRole(userId, newRole);
+    getUsers();
+  } catch (error) {
+    console.error("Erro ao mudar role:", error);
+  }
+};
+
 
   return (
     <div className="p-6">
@@ -48,7 +54,7 @@ const Page = () => {
 
         <TableBody>
           {users.map((user) => {
-            const role = user.role || "user";
+            const role = user.role || "Estudante";
             const uniqueKey = `${user.id}-${user.email}`; // Create a unique key
 
             return (
@@ -72,7 +78,7 @@ const Page = () => {
                       )}
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      {["user", "admin"].map((r) => (
+                      {["Estudante", "admin"].map((r) => (
                         <DropdownMenuItem asChild key={`${uniqueKey}-${r}`}>
                           <button
                             type="button"

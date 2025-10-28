@@ -1,21 +1,19 @@
-// app/admin/allusers/server.tsx
 "use server";
 
 import { readUsers } from "@/db/crud/users.crud";
 import { clerkClient } from "@clerk/nextjs/server";
 
 export async function fetchUsers() {
+  const { data: users } = await clerkClient.users.getUserList();
 
-  const client = await clerkClient();
-  const { data: users } = await client.users.getUserList();
+  console.log("Fetched users: ", users)
 
-  // Convert complex user objects into plain objects
   const simplifiedUsers = users.map((user) => ({
-    id: user.id,
+    id: user.id, // <-- ID real do Clerk
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.emailAddresses?.[0]?.emailAddress || "",
-    role: user.publicMetadata?.role || "user",
+    role: user.publicMetadata?.role || "Estudante",
     imageUrl: user.imageUrl || "",
   }));
 
@@ -23,40 +21,42 @@ export async function fetchUsers() {
 }
 
 export async function changeRole(userId: string, newRole: string) {
-  const client = await clerkClient();
-  await client.users.updateUser(userId, {
+  // ✅ Aqui não precisa de await clerkClient()
+  await clerkClient.users.updateUser(userId, {
     publicMetadata: { role: newRole },
   });
 }
 
 export const getUsersWithClerk = async () => {
-  // Fetch the list of users from your database
   const usersList = await readUsers();
 
-  // Enrich user data with Clerk information
+  console.log("users do Banco: ", usersList);
+
   const enriched = await Promise.all(
     (usersList ?? []).map(async (item) => {
       try {
-        const client = await clerkClient();
-        const clerkUser = await client.users.getUser(item.clerkId); // Fetch the Clerk user based on the clerkId
+        // ✅ clerkClient é usado diretamente
+        const clerkUser = await clerkClient.users.getUser(item.clerkId);
 
         return {
-          profile: clerkUser.imageUrl, // User's profile picture URL
-          fullName: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim(), // User's full name
-          email: clerkUser.emailAddresses?.[0]?.emailAddress || "Unknown Email", // User's email address
-          role: clerkUser.publicMetadata?.role ?? "User", // User's role from public metadata (default to "N/A" if not present)
+          id: item.clerkId, // ✅ importante para mudar role
+          profile: clerkUser.imageUrl,
+          fullName: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim(),
+          email: clerkUser.emailAddresses?.[0]?.emailAddress || "Unknown Email",
+          role: clerkUser.publicMetadata?.role ?? "Estudante",
         };
       } catch (err) {
         console.error("Clerk Fetch Error:", err);
         return {
+          id: item.clerkId || "unknown",
           profile: null,
           fullName: "Desconhecido",
-          email: "Desconhecido",
+          email: item.primaryEmail || "Desconhecido",
           role: "N/D",
         };
       }
     })
-    );
-  
-    return enriched;
-  }
+  );
+
+  return enriched;
+};

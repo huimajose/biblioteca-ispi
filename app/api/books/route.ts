@@ -17,6 +17,8 @@ export async function GET(request: NextRequest){
 
   try {
     const { searchParams } = new URL(request.url);
+    
+    
 
     if (searchParams.get("recent") === "true") {
       console.log("📚 Requisição recebida: livros recentes");
@@ -33,8 +35,11 @@ export async function GET(request: NextRequest){
     const sort = searchParams.get("sort") || "title";
     const order = searchParams.get("order") || "asc";
     const search = searchParams.get("search") || "";
+    const category = searchParams.get("category");
 
-    const response = await readBooks(page, pageSize, sort, order, search);
+    console.log("📗 Categoria recebida:", category);
+
+    const response = await readBooks(page, pageSize, sort, order, search, category);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching books:", error);

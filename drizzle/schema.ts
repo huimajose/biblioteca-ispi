@@ -52,6 +52,7 @@ export const books = pgTable(
     title: varchar({ length: 255 }).notNull(),
     author: varchar({ length: 255 }).notNull(),
     genre: varchar({ length: 100 }).notNull(),
+    genre_id: integer("genre_id").default(1),
     totalCopies: integer("total_copies").default(0).notNull(),
     availableCopies: integer("available_copies").default(0).notNull(),
     cover: varchar({ length: 255 }).notNull(),

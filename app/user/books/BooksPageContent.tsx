@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Search, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/ui/pagination";
+import { getCategoryName } from "@/utils/categoryMapper";
 
 import { useToast } from "@/components/ui/ToastContext";
 
@@ -49,6 +50,8 @@ export default function BooksPageContent() {
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
+
 
   const pageSize = 10;
 
@@ -58,20 +61,23 @@ export default function BooksPageContent() {
     const sortParam = (searchParams.get("sort") as SortField) ?? "title";
     const orderParam = (searchParams.get("order") as SortOrder) ?? "asc";
     const searchParam = searchParams.get("search") ?? "";
+    const categoryParam = searchParams.get("category");
 
     setCurrentPage(pageParam);
     setSortField(sortParam);
     setSortOrder(orderParam);
     setSearchQuery(searchParam);
+    setCategory(categoryParam)
 
-    fetchBooks(pageParam, sortParam, orderParam, searchParam);
+    fetchBooks(pageParam, sortParam, orderParam, searchParam, categoryParam);
   }, [searchParams]);
 
   const fetchBooks = async (
     page = currentPage,
     sort = sortField,
     order = sortOrder,
-    search = searchQuery
+    search = searchQuery,
+    categoryParam: string | null = category
   ) => {
     try {
       setLoading(true);
@@ -82,6 +88,12 @@ export default function BooksPageContent() {
         order,
         search,
       });
+
+            // Se existir uma category somente se existir
+      if(categoryParam){
+        params.set("category", categoryParam);
+      }
+
       const response = await fetch(`/api/books?${params}`);
       const data = await response.json();
       setBooks(data.books || []);
@@ -119,11 +131,57 @@ export default function BooksPageContent() {
 
   const totalPages = Math.ceil(totalBooks / pageSize);
 
+
+  
+
   return (
     
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-green-600">Todos os livros</h1>
+        <h1 className="text-3xl font-bold text-green-600">
+          {getCategoryName(category)}
+          </h1>
+          <div className="flex items-center gap-4">
+          {/* Botões de categorias */}
+          <div className="flex gap-2">
+            <Button
+              variant={category === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => router.push("/user/books")}
+            >
+              Todos
+            </Button>
+            <Button
+              variant={category === "1" ? "default" : "outline"}
+              size="sm"
+              onClick={() => router.push("/user/books?category=1")}
+            >
+              Livros
+            </Button>
+            <Button
+              variant={category === "2" ? "default" : "outline"}
+              size="sm"
+              onClick={() => router.push("/user/books?category=2")}
+            >
+              Monografias
+            </Button>
+             <Button
+              variant={category === "3" ? "default" : "outline"}
+              size="sm"
+              onClick={() => router.push("/user/books?category=3")}
+            >
+              Projetos
+            </Button>
+            <Button
+              variant={category === "4" ? "default" : "outline"}
+              size="sm"
+              onClick={() => router.push("/user/books?category=4")}
+            >
+              Artigos Ciêntíficos
+            </Button>
+          </div>
+            </div>
+          
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -203,30 +261,30 @@ export default function BooksPageContent() {
                   </TableCell>
                   <TableCell>{book.totalCopies}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={book.availableCopies === 0}
-                      onClick={async () => {
-                        const userId = 1;
-                        const res = await fetch(`/api/books/${book.id}/rent`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ userId }),
-                        });
-                        if (res.ok) {
-                          
-                          showToast('Livro alugado com sucesso!', 'success');
-                          
-                          fetchBooks();
-                        } else {
-                          const data = await res.json();
-                          alert(data.error || "Erro ao alugar o livro.");
-                        }
-                      }}
-                    >
-                      {book.availableCopies > 0 ? "Ler" : "Indisponível"}
-                    </Button>
+                  <Button
+                variant="outline"
+                size="sm"
+                disabled={book.availableCopies === 0}
+                onClick={async () => {
+                  const userId = 1;
+                  const res = await fetch(`/api/books/${book.id}/rent`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId }),
+                  });
+
+                  const data = await res.json();
+
+                  if (res.ok) {
+                    showToast("Livro alugado com sucesso!", "success");
+                    fetchBooks();
+                  } else {
+                    showToast(data.error || "Erro ao alugar o livro.", "error");
+                  }
+                }}
+              >
+                {book.availableCopies > 0 ? "Ler" : "Indisponível"}
+              </Button>
                   </TableCell>
                 </TableRow>
               ))}
