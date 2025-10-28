@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
-import { acceptUser, getVerifyPendingWithClerk, rejectUser } from "./server";
+import { acceptUser, getVerifyPendingWithClerk, rejectUser, syncClerkToVerifyPending } from "./server";
 
 const AccountRequestsClient = () => {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
@@ -47,6 +47,15 @@ const AccountRequestsClient = () => {
     
     loadData();
   };
+
+  useEffect(() => {
+  const sync = async () => {
+    await syncClerkToVerifyPending();
+    loadData();
+  };
+  sync();
+}, []);
+
 
   return (
     <div className="p-6">

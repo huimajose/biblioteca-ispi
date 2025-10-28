@@ -10,6 +10,7 @@ export const verifyPending = pgTable("verifyPending", {
 export const users = pgTable("users", {
   clerkId: varchar({ length: 255 }).primaryKey(),
   primaryEmail: varchar({ length: 255 }).notNull(),
+  role: varchar({length: 20})
 });
 
 export const admin = pgTable("admin", {
