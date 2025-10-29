@@ -92,3 +92,8 @@ export const updateUserRole = async (clerkId: string, newRole: string) => {
     throw new Error("Falha ao atualizar role do usuário");
   }
 };
+
+export async function verifyAdmin(userId: string) {
+  const [user] = await db.select().from(users).where(eq(users.clerkId, userId));
+  return user?.role === "admin";
+}

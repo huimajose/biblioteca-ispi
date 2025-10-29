@@ -30,3 +30,11 @@ export const getVerifyPendingWithClerk = async () => {
 
   return enriched;
 };
+
+
+export async function changeRole(userId: string, newRole: string) {
+  // ✅ Aqui não precisa de await clerkClient()
+  await clerkClient.users.updateUser(userId, {
+    publicMetadata: { role: newRole },
+  });
+}

@@ -222,7 +222,7 @@ export default function BooksPageContent() {
               params.set("sort", "id");
               params.set("order", "desc");
               params.set("page", "1");
-              router.push(`/admin/books?${params.toString()}`);
+              router.push(`/user/books?${params.toString()}`);
             }}
             className="flex items-center gap-2"
           >

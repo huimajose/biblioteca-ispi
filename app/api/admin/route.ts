@@ -1,6 +1,6 @@
 // app/api/admin/route.ts
 import { NextResponse } from "next/server";
-import { readUsers, updateUserRole } from "@/db/crud/users.crud";
+import { readUsers, updateUserRole, verifyAdmin } from "@/db/crud/users.crud";
 import { clerkClient } from "@clerk/nextjs/server";
 
 // 🔹 GET → retorna todos os usuários verificados
@@ -10,11 +10,22 @@ export async function GET() {
 
     const clerk = await clerkClient();
 
+    
+
     // Enriquecer dados com Clerk (nome, imagem)
     const enriched = await Promise.all(
       users.map(async (user: any) => {
         try {
           const clerkUser = await clerk.users.getUser(user.clerkId);
+              const isAdmin = await verifyAdmin(user.ckerkId);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    }
+
+
+    console.log("verificando se é admin: ", isAdmin)
+
+
           return {
             id: user.clerkId,
             fullName: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim(),
