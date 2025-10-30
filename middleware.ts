@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/api/books(.*)",
   "/api/verify-admin(.*)",
+  "/api/verify-role(.*)",
   "/user/reader(.*)",
 ]);
 
@@ -26,8 +27,37 @@ export default clerkMiddleware(async (auth, request) => {
 
   // 3) se rota admin, pergunta ao endpoint server-side se é admin
   if (request.nextUrl.pathname.startsWith("/admin")) {
+  try {
+    const res = await fetch(`${request.nextUrl.origin}/api/verify-role`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+      cache: "no-store",
+      credentials: "same-origin",
+    });
+
+    if (!res.ok) {
+      console.error("Erro na resposta verify-role:", res.status);
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+
+    const { role } = await res.json();
+    console.log("🧠 Role recebida no middleware:", role);
+
+    if (role !== "admin") {
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+  } catch (err) {
+    console.error("❌ Erro no middleware:", err);
+    return NextResponse.redirect(new URL("/unauthorized", request.url));
+  }
+}
+
+
+  // 4️ Rota USER — apenas user e estudante
+  if (request.nextUrl.pathname.startsWith("/user")) {
     try {
-      const res = await fetch(`${request.nextUrl.origin}/api/verify-admin`, {
+      const res = await fetch(`${request.nextUrl.origin}/api/verify-role`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
@@ -36,19 +66,20 @@ export default clerkMiddleware(async (auth, request) => {
       });
 
       if (!res.ok) {
-        // se endpoint deu erro, bloqueia por segurança
         return NextResponse.redirect(new URL("/unauthorized", request.url));
       }
 
-      const { isAdmin } = await res.json();
-      if (!isAdmin) {
+      const { role } = await res.json();
+      if (role !== "user" && role !== "estudante" && role !== "admin") {
+        // admin também pode acessar, se quiser permitir
         return NextResponse.redirect(new URL("/unauthorized", request.url));
       }
     } catch (err) {
-      console.error("Erro ao verificar admin no middleware:", err);
+      console.error("Erro ao verificar role no middleware:", err);
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
+
 
   // 4) tudo ok — segue
   return NextResponse.next();

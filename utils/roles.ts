@@ -11,7 +11,13 @@ export const checkRole = async (role: Roles) => {
   return sessionClaims?.metadata.role === role;
 };
 
-export async function verifyAdmin(userId: string) {
+export async function getUserRole(userId: string) {
   const [user] = await db.select().from(users).where(eq(users.clerkId, userId));
-  return user?.role === "admin";
+  return user?.role || null;
+}
+
+// Mantém a função anterior para compatibilidade:
+export async function verifyAdmin(userId: string) {
+  const role = await getUserRole(userId);
+  return role === "admin";
 }
