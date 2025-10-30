@@ -1,40 +1,62 @@
+// middleware.ts
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { verifyAdmin } from "./db/crud/users.crud";
-import { getAuth } from "@clerk/nextjs/server";
-
 
 const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
   "/",
   "/contact",
   "/faq",
   "/terms",
+  "/sign-in(.*)",
   "/sign-up(.*)",
-  "/api/books",
-  "/api/books/(.*)",
-  "/api/books/count(.*)",
-  "/api/user/count(.*)",
+  "/api/books(.*)",
+  "/api/verify-admin(.*)",
   "/user/reader(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+  // 1) libera rotas públicas
+  if (isPublicRoute(request)) return NextResponse.next();
 
-  if (!isPublicRoute(request)) {
-    await auth.protect();
-
-    //if(request.nextUrl.pathname.startsWith('/admin')) {
-     
-    //return NextResponse.redirect(new URL('/unauthorized', request.url))
-  //}
+  // 2) exige autenticação (redirect para sign-in se necessário)
+  const { userId, redirectToSignIn } = await auth();
+  if (!userId) {
+    return redirectToSignIn({ returnBackUrl: request.url });
   }
+
+  // 3) se rota admin, pergunta ao endpoint server-side se é admin
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    try {
+      const res = await fetch(`${request.nextUrl.origin}/api/verify-admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        // se endpoint deu erro, bloqueia por segurança
+        return NextResponse.redirect(new URL("/unauthorized", request.url));
+      }
+
+      const { isAdmin } = await res.json();
+      if (!isAdmin) {
+        return NextResponse.redirect(new URL("/unauthorized", request.url));
+      }
+    } catch (err) {
+      console.error("Erro ao verificar admin no middleware:", err);
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+  }
+
+  // 4) tudo ok — segue
+  return NextResponse.next();
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };
