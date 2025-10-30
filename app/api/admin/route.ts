@@ -17,13 +17,6 @@ export async function GET() {
       users.map(async (user: any) => {
         try {
           const clerkUser = await clerk.users.getUser(user.clerkId);
-              const isAdmin = await verifyAdmin(user.ckerkId);
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
-    }
-
-
-    console.log("verificando se é admin: ", isAdmin)
 
 
           return {
@@ -31,7 +24,7 @@ export async function GET() {
             fullName: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim(),
             email: user.primaryEmail,
             profile: clerkUser.imageUrl,
-            role: user.role ?? "Estudante",
+            role: user.role ?? "User",
           };
         } catch {
           return {
@@ -39,7 +32,7 @@ export async function GET() {
             fullName: "Usuário não encontrado",
             email: user.primaryEmail,
             profile: null,
-            role: user.role ?? "Estudante",
+            role: user.role ?? "User",
           };
         }
       })

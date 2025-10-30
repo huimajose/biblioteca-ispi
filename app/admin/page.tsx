@@ -1,11 +1,12 @@
 // app/admin/dashboard.tsx
-import { checkRole } from "@/utils/roles";
+import { checkRole, verifyAdmin } from "@/utils/roles";
 import { redirect } from "next/navigation";
 import { UsersIcon, BookOpenIcon, ClipboardDocumentCheckIcon, ClockIcon, BookmarkIcon, BookmarkSlashIcon, BookOpenIcon as AvailableBooksIcon } from "@heroicons/react/24/solid";
 import { getUserCount } from "@/db/crud/users.crud";
 import { readBooks } from "@/db/crud/books.crud";
 import { readVerifyPending } from "@/db/crud/verifyPending.crud";
 import { readTransactions } from "@/db/crud/transactions.crud";
+import { currentUser } from "@clerk/nextjs/server";
 
 export default async function AdminDashboard() {
   //const isAdmin = await checkRole("admin");
@@ -13,11 +14,19 @@ export default async function AdminDashboard() {
     //redirect("/");
   //}
 
+
+
   // Fetch data for dashboard cards
   const userCount = await getUserCount();
   const { totalBooks, books } = await readBooks(1, 1000); // Get all books for counting
   const pendingUsers = await readVerifyPending();
   const transactions = await readTransactions() || [];
+  const user = await currentUser()
+
+  const isAdmin = await verifyAdmin(user.id)
+
+    console.log("Verificar se o user é Admin: ", isAdmin)
+    
 
   // Calculate available books
   const availableBooks = books.reduce((sum, book) => sum + book.availableCopies, 0);

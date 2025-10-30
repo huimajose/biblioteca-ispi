@@ -1,4 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { verifyAdmin } from "./db/crud/users.crud";
+import { getAuth } from "@clerk/nextjs/server";
+
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -15,8 +19,14 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+
   if (!isPublicRoute(request)) {
     await auth.protect();
+
+    //if(request.nextUrl.pathname.startsWith('/admin')) {
+     
+    //return NextResponse.redirect(new URL('/unauthorized', request.url))
+  //}
   }
 });
 

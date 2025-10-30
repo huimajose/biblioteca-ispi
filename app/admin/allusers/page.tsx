@@ -68,7 +68,7 @@ export default function AllUsersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      {["Estudante", "admin"].map((r) => (
+                      {["Estudante", "admin", "User"].map((r) => (
                         <DropdownMenuItem key={r}>
                           <button
                             className={`w-full text-left ${r === role ? "font-semibold text-blue-500" : ""}`}
