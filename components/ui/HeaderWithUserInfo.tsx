@@ -48,16 +48,13 @@ export default function LibraryHeader() {
           <Link href="/user/books">
             <Button variant="ghost">Livros</Button>
           </Link>
-          {/* 📄 Monografias */}
-          <Link href="/user/books">
-            <Button variant="ghost">Repositorio</Button>
-          </Link>
+     
           {/* 📄 Monografias */}
           <Link href="/contact">
             <Button variant="ghost">Contactos</Button>
           </Link>
           <Link href="/faq">
-            <Button variant="ghost">Faq</Button>  
+            <Button variant="ghost">FAQ</Button>  
           </Link>
           {/* Modo escuro */}
           
@@ -105,15 +102,13 @@ export default function LibraryHeader() {
           <Link href="/user/books">
             <Button variant="ghost">Livros</Button>
           </Link>
-          <Link href="/monografias">
-            <Button variant="ghost">Repositorio</Button>
-          </Link>
+          
           <Link href="/contactos">
             <Button variant="ghost">Contactos</Button>
           </Link>
           
-          <Link href="/contactos">
-            <Button variant="ghost">Faq</Button>
+          <Link href="/faq">
+            <Button variant="ghost">FAQ</Button>
           </Link>
 
           {/* Ações de usuário */}

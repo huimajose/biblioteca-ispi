@@ -73,16 +73,13 @@ export default async function UserDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-gray-600">Minha estante</p>
-            <p className="text-lg font-medium text-green-600">{userPhysicalBooks.length}</p>
+            <p className="text-lg font-medium text-green-600"><a href="user/borrowings">{userPhysicalBooks.length}</a></p>
           </div>
           <div>
-            <p className="text-gray-600">Livros expirados</p>
+            <p className="text-gray-600">Livros com data de entrega expirado</p>
             <p className="text-lg font-medium text-green-600">{overdueBooks.length}</p>
           </div>
-          <div>
-            <p className="text-gray-600">Total pendentes</p>
-            <p className="text-lg font-medium text-red-600">{fines} Kzs</p>
-          </div>
+         
         </div>
       </div>
 

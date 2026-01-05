@@ -7,7 +7,7 @@ const categoryMap: Record<number, string> = {
 
 
 export function getCategoryName(id: string | number | null): string {
-  if (!id) return "Todos os livros";
+  if (!id) return "#";
   const numericId = Number(id);
   return categoryMap[numericId] || `Categoria ${numericId}`;
 }
