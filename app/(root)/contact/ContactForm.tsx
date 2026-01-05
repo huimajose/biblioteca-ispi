@@ -15,7 +15,7 @@ export default function ContactForm() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch("/contact/api", {
+    const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),

@@ -13,7 +13,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/verify-admin(.*)",
   "/api/verify-role(.*)",
   "/user/reader(.*)",
-  "www.google.com(.*)"
+  "www.google.com(.*)",
+  "/api/contact(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
