@@ -487,3 +487,18 @@ export const getRecentBooks = async (limit = 6) => {
     throw error;
   }
 };
+
+
+export async function getBookTitleByPhysicalId(pid: number) {
+  try {
+    const result = await db
+      .select({ title: books.title })
+      .from(physicalBooks)
+      .innerJoin(books, eq(books.id, physicalBooks.bookId))
+      .where(eq(physicalBooks.pid, pid));
+    return result[0]?.title || "Livro desconhecido";
+  } catch (error) {
+    console.error("Erro ao buscar título do livro:", error);
+    return "Erro";
+  }
+}

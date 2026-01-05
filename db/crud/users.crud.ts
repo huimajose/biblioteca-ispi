@@ -97,3 +97,15 @@ export async function verifyAdmin(userId: string) {
   const [user] = await db.select().from(users).where(eq(users.clerkId, userId));
   return user?.role === "admin";
 }
+
+
+
+export async function getUserNameById(userId: string) {
+  try {
+    const [user] = await db.select({ name: users.fullName }).from(users).where(eq(users.clerkId, userId));
+    return user?.name || "Desconhecido";
+  } catch (error) {
+    console.error("Erro ao buscar nome do usuário:", error);
+    return "Erro";
+  }
+}

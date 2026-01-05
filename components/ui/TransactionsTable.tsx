@@ -16,6 +16,8 @@ interface Transaction {
   status: string;
   borrowedDate: string;
   returnedDate: string | null;
+  userName?: string;
+  bookTitle?: string;
 }
 
 interface TransactionsTableProps {
@@ -159,7 +161,7 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
             {sortedTransactions?.map((tx) => (
               <TableRow key={tx.tid}>
                 <td className="px-4 py-2">{tx.tid}</td>
-                <td className="px-4 py-2">{tx.physicalBookId}</td>
+                <td className="px-4 py-2">{tx.bookTitle ?? `Livro #${tx.physicalBookId}`}</td>
                 <td className="px-4 py-2">{tx.userId}</td>
                 
                 <td className="px-4 py-2 capitalize">{tx.status}</td>

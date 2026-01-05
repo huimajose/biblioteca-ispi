@@ -27,8 +27,17 @@ export default function ContactPage() {
             <MapPin className="text-green-600" />
             <p className="text-gray-700">Estrada Cristo Rei, Huíla,  Lubango - Angola</p>
           </div>
-        </div>
+            
+<iframe
+  src="https://www.google.com/maps?q=-14.958230418193224,13.484409623151006&hl=pt&z=17&output=embed"
+  className="w-full h-[300px] rounded-lg"
+  style={{ border: 0 }}
+  loading="lazy"
+  referrerPolicy="no-referrer-when-downgrade"
+  title="Biblioteca ISPI - Lubango"
+/>
 
+</div>      
         {/* Formulário */}
         <div>
           <ContactForm />
