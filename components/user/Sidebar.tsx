@@ -1,4 +1,4 @@
-import { User, BookOpen, History, Clock } from "lucide-react"
+import { User, BookOpen, History,  Library } from "lucide-react"
 import {
     Sidebar,
     SidebarContent,
@@ -10,6 +10,7 @@ import {
     SidebarMenuItem,
     SidebarProvider,
 } from "@/components/ui/sidebar"
+
 
 const items = [
     {
@@ -28,9 +29,9 @@ const items = [
         text: "Requisições",
     },
     {
-        img: Clock,
+        img: Library,
         route: "/user/borrowings",
-        text: "Minha Biblioteca",
+        text: "Minha estante",
     },
 ];
 

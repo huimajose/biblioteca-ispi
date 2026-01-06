@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { checkRole } from "@/utils/roles";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";

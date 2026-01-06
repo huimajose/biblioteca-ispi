@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/neon-http";
-import { books, physicalBooks } from "@/drizzle/schema";
+import { books, physicalBooks, userDigitalBooks  } from "@/drizzle/schema";
 import { eq, desc, count, sql, and, asc, like, or } from "drizzle-orm";
 import { createTransactions } from "./transactions.crud";
 import { getCurrentDate, getReturnDatePlus7Days } from "@/utils/date";
@@ -500,5 +501,74 @@ export async function getBookTitleByPhysicalId(pid: number) {
   } catch (error) {
     console.error("Erro ao buscar título do livro:", error);
     return "Erro";
+  }
+}
+
+export async function addBookToShelf(bookId: number, userIdd: string) {
+  try {
+    console.log("🚀 Iniciando addBookToShelf");
+    console.log("📘 bookId:", bookId, "👤 userId:", userIdd);
+
+    // 1️⃣ Verificar se o livro existe e é digital
+    console.log("🔍 Buscando livro no banco...");
+    const book = await db
+      .select()
+      .from(books)
+      .where(eq(books.id, bookId))
+      .limit(1);
+
+    if (!book.length) {
+      return {
+        success: false,
+        message: "Livro não encontrado",
+      };
+    }
+
+    if (!book[0].is_digital) {
+     return {
+        success: false,
+        message: "Este livro não possui versão digital",
+      };
+    }
+    console.log("✅ Livro é digital:", book[0].title);
+
+    // 2️⃣ Checar duplicados na estante
+    console.log("🔍 Verificando se já existe na estante...");
+    const exists = await db
+      .select()
+      .from(userDigitalBooks)
+      .where(
+        and(
+          eq(userDigitalBooks.bookId, bookId),
+          eq(userDigitalBooks.userId, userIdd)
+        )
+      );
+
+    if (exists.length) {
+      return {
+        success: false,
+        message: "Livro já está na sua estante",
+      };
+    }
+    console.log("✅ Livro não está duplicado");
+
+    // 3️⃣ Inserir livro na estante
+    console.log("✏️ Inserindo livro na estante...");
+    await db.insert(userDigitalBooks).values({
+      bookId,
+      userId: userIdd, // atenção: nome exato da coluna
+    });
+    console.log("✅ Inserção concluída com sucesso");
+
+    return {
+      success: true,
+      message: `Livro "${book[0].title}" adicionado à sua estante! 🎉`,
+    };
+  } catch (error) {
+    console.error("❌ addBookToShelf error:", error);
+     return {
+      success: false,
+      message: "Ocorreu um erro ao adicionar o livro",
+    };
   }
 }

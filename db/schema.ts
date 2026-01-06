@@ -1,5 +1,5 @@
 import { boolean, date, integer, pgTable, serial, varchar, timestamp } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+
 
 export const verifyPending = pgTable("verifyPending", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -57,4 +57,12 @@ export const physicalBooks = pgTable("physical_books", {
   returnDate: date("return_date"),
   userId: varchar("user_id", { length: 255 }),
   currTransactionId: integer("curr_transaction_id").notNull(),
+});
+
+
+export const userDigitalBooks = pgTable("user_digital_books", {
+  id: serial("id").primaryKey(),          // ID único da relação
+  bookId: integer("bookid").notNull(),   // FK para books.id
+  userId: varchar("userid", { length: 255 }).notNull(), // FK para users.clerkId
+  addedAt: timestamp("addedat").notNull().defaultNow(),
 });

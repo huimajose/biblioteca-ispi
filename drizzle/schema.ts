@@ -64,3 +64,27 @@ export const books = pgTable(
   },
   (table) => [unique("books_isbn_unique").on(table.isbn)]
 );
+
+
+export const userDigitalBooks = pgTable(
+  "user_digital_books",
+  {
+    id: serial().primaryKey().notNull(),
+
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.clerkId, { onDelete: "cascade" }),
+
+    bookId: integer("book_id")
+      .notNull()
+      .references(() => books.id, { onDelete: "cascade" }),
+
+    addedAt: date("added_at").default(sql`now()`).notNull(),
+  },
+  (table) => [
+    unique("user_digital_books_user_book_unique").on(
+      table.userId,
+      table.bookId
+    ),
+  ]
+);
