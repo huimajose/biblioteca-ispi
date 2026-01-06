@@ -22,13 +22,36 @@ interface BookActionsProps {
 export function BookActions({ book }: BookActionsProps) {
   const { showToast } = useToast();
 
-  async function addToShelf() {
+
+async function addToShelf() {
+  try {
     const res = await fetch(`/api/books/${book.id}/add-to-shelf`, {
       method: "POST",
+      credentials: "include",
     });
-    const data = await res.json();
-    showToast(data.message, data.success ? "success" : "error");
+
+    // ✅ Status 200 = livro adicionado
+    if (res.ok) {
+      showToast("Livro adicionado à estante! 🎉", "success");
+      return;
+    }
+
+    // ⚠️ Status 400 = já existe
+    if (res.status === 400) {
+      showToast("O livro já está na sua estante.", "error");
+      return;
+    }
+
+    // ❌ Qualquer outro erro
+    showToast("Erro inesperado ao adicionar à estante.", "error");
+  } catch (err) {
+    console.error("Erro ao adicionar à estante:", err);
+    showToast("Erro inesperado ao adicionar à estante.", "error");
   }
+}
+
+
+
 
   async function requestLoan() {
     const res = await fetch(`/api/books/${book.id}/rent`, {

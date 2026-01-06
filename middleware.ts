@@ -18,6 +18,15 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+
+  console.log(
+    "🛠️ Rota requisitada:",
+    request.nextUrl.pathname,
+    "é pública?",
+    isPublicRoute(request)
+  );
+
+  
   // 1) libera rotas públicas
   if (isPublicRoute(request)) return NextResponse.next();
 

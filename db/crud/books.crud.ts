@@ -506,11 +506,7 @@ export async function getBookTitleByPhysicalId(pid: number) {
 
 export async function addBookToShelf(bookId: number, userIdd: string) {
   try {
-    console.log("🚀 Iniciando addBookToShelf");
-    console.log("📘 bookId:", bookId, "👤 userId:", userIdd);
 
-    // 1️⃣ Verificar se o livro existe e é digital
-    console.log("🔍 Buscando livro no banco...");
     const book = await db
       .select()
       .from(books)
@@ -530,11 +526,8 @@ export async function addBookToShelf(bookId: number, userIdd: string) {
         message: "Este livro não possui versão digital",
       };
     }
-    console.log("✅ Livro é digital:", book[0].title);
 
-    // 2️⃣ Checar duplicados na estante
-    console.log("🔍 Verificando se já existe na estante...");
-    const exists = await db
+   const exists = await db
       .select()
       .from(userDigitalBooks)
       .where(
@@ -550,17 +543,12 @@ export async function addBookToShelf(bookId: number, userIdd: string) {
         message: "Livro já está na sua estante",
       };
     }
-    console.log("✅ Livro não está duplicado");
-
-    // 3️⃣ Inserir livro na estante
-    console.log("✏️ Inserindo livro na estante...");
-    await db.insert(userDigitalBooks).values({
+   await db.insert(userDigitalBooks).values({
       bookId,
       userId: userIdd, // atenção: nome exato da coluna
     });
-    console.log("✅ Inserção concluída com sucesso");
-
-    return {
+    
+  return {
       success: true,
       message: `Livro "${book[0].title}" adicionado à sua estante! 🎉`,
     };
