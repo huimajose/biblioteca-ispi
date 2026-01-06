@@ -22,16 +22,11 @@ export async function POST(
     }
 
     const result = await addBookToShelf(bookId, userId);
-
-    if (result) {
-      return NextResponse.json({success: true, message: result.message }, { status: 200 });
-      
-    }
-
-   return NextResponse.json(
-    { success: false, message: result.message },
-  { status: 400 }
-   );
+    
+return NextResponse.json(
+  { success: result.success, message: result.message },
+  { status: result.success ? 200 : 400 }
+);
 
   } catch (error) {
     console.error(error);
