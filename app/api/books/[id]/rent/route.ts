@@ -27,10 +27,10 @@ export async function POST(
         }
 
         const result = await rentBook(bookId, userId);
-        if (result) {
-            return NextResponse.json({ message: "Book rented successfully" }, { status: 200 });
-        }
-        return NextResponse.json({ error: "Failed to rent book" }, { status: 500 });
+return NextResponse.json(
+  { success: result.success, message: result.message },
+  { status: result.success ? 200 : 400 }
+);
 
     } catch (error) {
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

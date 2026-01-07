@@ -14,7 +14,7 @@ export async function fetchUserTransactions() {
         if (!userId) {
             throw new Error("Unauthorized");
         }
-        console.log("User ID:", userId);
+
 
         // Get current user's email
         const userData = await currentUser();
@@ -24,7 +24,7 @@ export async function fetchUserTransactions() {
         } else {
             userMap.set(userId, "Unknown");
         }
-        console.log("User Email:", userMap.get(userId));
+      
 
         // Get all transactions
         const transactions = await readTransactions();
@@ -32,15 +32,15 @@ export async function fetchUserTransactions() {
             console.log("No transactions found");
             return [];
         }
-        console.log("All Transactions:", transactions);
+  
 
         // Filter transactions for the current user
         const userTransactions = transactions.filter(tx => tx.userId === userId);
-        console.log("User Transactions:", userTransactions);
+
 
         // Get unique physical book IDs
         const physicalBookIds = [...new Set(userTransactions.map(tx => tx.physicalBookId))];
-        console.log("Physical Book IDs:", physicalBookIds);
+
 
         // Create a map to store physical book to book ID mapping
         const bookIdMap = new Map();
@@ -49,12 +49,12 @@ export async function fetchUserTransactions() {
         await Promise.all(
             physicalBookIds.map(async (pid) => {
                 try {
-                    console.log("Fetching physical book:", pid);
+                   
                     const physicalBook = await db.select().from(physicalBooks).where(eq(physicalBooks.bookId, pid));
-                    console.log("Physical book result:", physicalBook);
+                    
                     if (physicalBook && physicalBook.length > 0) {
                         bookIdMap.set(pid, physicalBook[0].bookId);
-                        console.log(`Mapped physical book ${pid} to book ${physicalBook[0].bookId}`);
+                        
                     }
                 } catch (error) {
                     console.error(`Error fetching physical book ${pid}:`, error);
@@ -62,7 +62,6 @@ export async function fetchUserTransactions() {
             })
         );
 
-        console.log("Book ID Map:", Object.fromEntries(bookIdMap));
 
         // Fetch book details using the actual book IDs
         const bookMap = new Map();
@@ -74,7 +73,7 @@ export async function fetchUserTransactions() {
                     console.log("Book result:", book);
                     if (book) {
                         bookMap.set(bookId, book);
-                        console.log(`Added book ${bookId} to book map:`, book);
+                        
                     }
                 } catch (error) {
                     console.error(`Error fetching book ${bookId}:`, error);
@@ -82,7 +81,6 @@ export async function fetchUserTransactions() {
             })
         );
 
-        console.log("Book Map:", Object.fromEntries(bookMap));
 
         // Enrich transactions with book and user details
         const enrichedTransactions = userTransactions.map(tx => {
@@ -99,7 +97,7 @@ export async function fetchUserTransactions() {
             };
         });
 
-        console.log("Enriched Transactions:", enrichedTransactions);
+      
         return enrichedTransactions;
     } catch (error) {
         console.error("Error fetching user transactions:", error);

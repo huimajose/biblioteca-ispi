@@ -362,70 +362,80 @@ export const readSingleBook = async (bookId: number) => {
 };
 
 export async function rentBook(bookId: number, userId: string) {
-  
   try {
-    // Buscar um livro físico disponível
+    // 1️⃣ Verifica se o livro existe
+    const book = await db
+      .select()
+      .from(books)
+      .where(eq(books.id, bookId))
+      .limit(1);
+
+    if (!book.length) {
+      return { success: false, message: "Livro não encontrado" };
+    }
+
+    // 2️⃣ Verifica se ainda há cópias físicas disponíveis
     const availableBooks = await db
       .select()
       .from(physicalBooks)
-      .where(eq(physicalBooks.bookId, bookId))
+      .where(and(eq(physicalBooks.bookId, bookId), eq(physicalBooks.borrowed, false)))
       .limit(1);
 
-
-      console.log("numero de livros encontrados: ", availableBooks)
-
-    // Verificar se existem livros disponíveis
-
     if (availableBooks.length === 0) {
-      throw new Error("Não existe nenhum livro associado a este ID.");
+      return { success: false, message: "Nenhuma cópia física disponível para empréstimo" };
     }
 
     const bookToRent = availableBooks[0];
 
-    // Atualizar o status do livro físico para emprestado
+    // 3️⃣ Verifica se o usuário já pegou este livro emprestado
+    const existingRental = await db
+      .select()
+      .from(physicalBooks)
+      .where(and(eq(physicalBooks.bookId, bookId), eq(physicalBooks.userId, userId), eq(physicalBooks.borrowed, true)))
+      .limit(1);
+
+    if (existingRental.length) {
+      return { success: false, message: "Você já requisitou este livro" };
+    }
+
+    // 4️⃣ Atualiza o livro físico para "emprestado"
     const updatedPhysicalBook = await db
       .update(physicalBooks)
-      .set({ borrowed: true, userId: userId, returnDate: getReturnDatePlus7Days()  })
+      .set({
+        borrowed: true,
+        userId,
+        returnDate: getReturnDatePlus7Days(),
+      })
       .where(eq(physicalBooks.pid, bookToRent.pid))
       .returning();
 
     if (updatedPhysicalBook.length === 0) {
-      throw new Error("Ocorreu um erro ao actualizar o status do livro.");
+      return { success: false, message: "Erro ao atualizar o status do livro físico" };
     }
 
-    // Atualizar o número de cópias disponíveis no livro geral
-    const updatedBookCount = await db
+    // 5️⃣ Atualiza a contagem de cópias disponíveis no livro geral
+    await db
       .update(books)
-      .set({
-        availableCopies: sql`${books.availableCopies} - 1`
-      })
-      .where(eq(books.id, bookId))
-      .returning();
+      .set({ availableCopies: sql`${books.availableCopies} - 1` })
+      .where(eq(books.id, bookId));
 
-    if (updatedBookCount.length === 0) {
-      throw new Error("Ocorreu um erro actualizar as informações do livro na tabela.");
-    }
-
+    // 6️⃣ Cria transação de empréstimo
     const trans_result = await createTransactions(bookId, userId, userId, "borrowed", getCurrentDate(), getReturnDatePlus7Days());
-
     if (!trans_result) {
-      throw new Error("Ocorreu um erro ao criar a transação de empréstimo.");
+      return { success: false, message: "Erro ao criar transação de empréstimo" };
     }
-
 
     return {
       success: true,
-      message: "Livro requisitado com sucesso.",
+      message: `Livro "${book[0].title}" requisitado com sucesso! 📚`,
       physicalBook: updatedPhysicalBook[0],
     };
   } catch (error) {
-    console.error("Ocorreu um erro ao requisitar o livro:", error);
-    return {
-      success: false,
-      message: (error as Error).message,
-    };
+    console.error("❌ rentBook error:", error);
+    return { success: false, message: (error as Error).message || "Ocorreu um erro ao requisitar o livro" };
   }
 }
+
 
 export const updateBookFileUrl = async (id: number, fileUrl: string) => {
   try {

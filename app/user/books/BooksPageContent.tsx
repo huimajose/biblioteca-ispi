@@ -320,18 +320,18 @@ export default function BooksPageContent() {
                               try {
                                 const res = await fetch(`/api/books/${book.id}/rent`, { method: "POST" });
                                 const data = await res.json();
-                                if (res.ok) {
-                                  showToast("Empréstimo solicitado!", "success");
-                                  setBooks(prev =>
-                                    prev.map(b =>
-                                      b.id === book.id
-                                        ? { ...b, availableCopies: b.availableCopies - 1 }
-                                        : b
-                                    )
-                                  );
-                                } else {
-                                  showToast(data.error || "Erro ao solicitar empréstimo.", "error");
-                                }
+
+                                showToast(data.message, data.success ? "success" : "error");
+                               // Se sucesso, atualiza o estado local de availableCopies
+        if (data.success && data.physicalBook) {
+          setBooks(prev =>
+            prev.map(b =>
+              b.id === book.id
+                ? { ...b, availableCopies: b.availableCopies - 1 }
+                : b
+            )
+          );
+        }
                               } catch {
                                 showToast("Erro ao solicitar empréstimo.", "error");
                               } finally {
