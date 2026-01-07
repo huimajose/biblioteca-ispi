@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,16 +13,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/ui/pagination";
 import { getCategoryName } from "@/utils/categoryMapper";
 import clsx from "clsx";
+import { useToast } from "@/components/ui/ToastContext";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/components/ui/ToastContext";
 
 interface Book {
   id: number;
@@ -53,6 +54,8 @@ type SortField =
 type SortOrder = "asc" | "desc";
 
 export default function BooksPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
 
   const [books, setBooks] = useState<BookWithLoading[]>([]);
@@ -67,7 +70,23 @@ export default function BooksPageContent() {
   const pageSize = 10;
   const totalPages = Math.ceil(totalBooks / pageSize);
 
-  // 🔁 Busca livros do servidor
+  // 🔁 Atualiza estado e busca livros sempre que a URL muda
+  useEffect(() => {
+    const pageParam = parseInt(searchParams.get("page") ?? "1");
+    const sortParam = (searchParams.get("sort") as SortField) ?? "title";
+    const orderParam = (searchParams.get("order") as SortOrder) ?? "asc";
+    const searchParam = searchParams.get("search") ?? "";
+    const categoryParam = searchParams.get("category") ?? null;
+
+    setCurrentPage(pageParam);
+    setSortField(sortParam);
+    setSortOrder(orderParam);
+    setSearchQuery(searchParam);
+    setCategory(categoryParam);
+
+    fetchBooks(pageParam, sortParam, orderParam, searchParam, categoryParam);
+  }, [searchParams]);
+
   const fetchBooks = async (
     page = currentPage,
     sort = sortField,
@@ -98,43 +117,50 @@ export default function BooksPageContent() {
     }
   };
 
-  // 🔁 Atualiza lista quando filtros mudam
-  useEffect(() => {
-    fetchBooks();
-  }, [currentPage, sortField, sortOrder, searchQuery, category]);
-
-  // 🔀 Ordenação
   const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
+    const newOrder =
+      field === sortField && sortOrder === "asc" ? "desc" : "asc";
+
+    const params = new URLSearchParams(searchParams);
+    params.set("sort", field);
+    params.set("order", newOrder);
+    params.set("page", "1"); // volta para página 1
+    router.push(`/user/books?${params.toString()}`);
   };
 
-  // 🔍 Pesquisa
   const handleSearch = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1); // sempre volta à página 1 ao pesquisar
+    const params = new URLSearchParams(searchParams);
+    if (value) params.set("search", value);
+    else params.delete("search");
+    params.set("page", "1");
+    router.push(`/user/books?${params.toString()}`);
   };
 
-  // 📄 Paginação
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleCategory = (catId: string | null) => {
+    const params = new URLSearchParams(searchParams);
+    if (catId) params.set("category", catId);
+    else params.delete("category");
+    params.set("page", "1");
+    router.push(`/user/books?${params.toString()}`);
   };
+
+  /*
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", page.toString());
+    router.push(`/user/books?${params.toString()}`);
+  };
+  */
 
   return (
     <div className="p-6">
-      {/* Cabeçalho com filtros */}
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-green-600">
           {getCategoryName(category)}
         </h1>
 
         <div className="flex items-center gap-4 flex-wrap">
-          {/* Botões de categorias */}
-          {["Todos", "Livros", "Monografias", "Projetos", "Artigos Ciêntíficos"].map(
+          {["Todos", "Livros", "Monografias", "Artigos Ciêntíficos"].map(
             (name, idx) => {
               const catId = idx === 0 ? null : idx.toString();
               const isActive = category === catId;
@@ -149,7 +175,7 @@ export default function BooksPageContent() {
                       ? "bg-green-600 text-white hover:bg-green-700"
                       : "bg-white text-gray-700 hover:bg-gray-100 border"
                   )}
-                  onClick={() => setCategory(catId)}
+                  onClick={() => handleCategory(catId)}
                 >
                   {name}
                 </Button>
@@ -157,13 +183,15 @@ export default function BooksPageContent() {
             }
           )}
 
-          {/* Ordenar por Novos */}
           <Button
             size="sm"
             variant="outline"
             onClick={() => {
-              setSortField("id");
-              setSortOrder("desc");
+              const params = new URLSearchParams(searchParams);
+              params.set("sort", "id");
+              params.set("order", "desc");
+              params.set("page", "1");
+              router.push(`/user/books?${params.toString()}`);
             }}
             className="flex items-center gap-2"
           >
@@ -171,11 +199,10 @@ export default function BooksPageContent() {
             Novos
           </Button>
 
-          {/* Input pesquisa */}
           <div className="relative w-[300px] sm:w-[600px]">
             <Input
               type="text"
-              placeholder="Procurar livros..."
+              placeholder="Procurar livros, monografias, artigos , autores, ISBN...."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10"
@@ -185,7 +212,6 @@ export default function BooksPageContent() {
         </div>
       </div>
 
-      {/* Tabela de livros */}
       {loading ? (
         <div className="text-center py-8 text-green-600">Carregando livros...</div>
       ) : (
@@ -193,37 +219,39 @@ export default function BooksPageContent() {
           <Table>
             <TableHeader>
               <TableRow>
-                {["title", "author", "isbn", "availableCopies", "totalCopies"].map((field) => (
-                  <TableHead
-                    key={field}
-                    className="cursor-pointer"
-                    onClick={() => handleSort(field as SortField)}
-                  >
-                    <div className="flex items-center">
-                      {field === "title"
-                        ? "Título"
-                        : field === "author"
-                        ? "Autor"
-                        : field === "isbn"
-                        ? "ISBN"
-                        : field === "availableCopies"
-                        ? "Disponível"
-                        : "Total"}
-                      {sortField === field && (
-                        sortOrder === "asc" ? (
-                          <ChevronUp className="ml-1 h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="ml-1 h-4 w-4" />
-                        )
-                      )}
-                    </div>
-                  </TableHead>
-                ))}
+                {["title", "author", "isbn", "availableCopies", "totalCopies"].map(
+                  (field) => (
+                    <TableHead
+                      key={field}
+                      className="cursor-pointer"
+                      onClick={() => handleSort(field as SortField)}
+                    >
+                      <div className="flex items-center">
+                        {field === "title"
+                          ? "Título"
+                          : field === "author"
+                          ? "Autor"
+                          : field === "isbn"
+                          ? "ISBN"
+                          : field === "availableCopies"
+                          ? "Disponível"
+                          : "Total"}
+                        {sortField === field && (
+                          sortOrder === "asc" ? (
+                            <ChevronUp className="ml-1 h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="ml-1 h-4 w-4" />
+                          )
+                        )}
+                      </div>
+                    </TableHead>
+                  )
+                )}
                 <TableHead>Ação</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {books.map((book, idx) => (
+              {books.map((book) => (
                 <TableRow key={book.id}>
                   <TableCell>{book.title}</TableCell>
                   <TableCell>{book.author}</TableCell>
@@ -247,29 +275,29 @@ export default function BooksPageContent() {
                           Ação
                         </Button>
                       </DropdownMenuTrigger>
-
                       <DropdownMenuContent align="end" className="w-56">
-                        {/* DIGITAL */}
                         {book.is_digital && (
                           <DropdownMenuItem
                             disabled={book.loadingDigital}
                             onClick={async () => {
                               setBooks(prev =>
-                                prev.map((b, i) =>
-                                  i === idx ? { ...b, loadingDigital: true } : b
+                                prev.map(b =>
+                                  b.id === book.id ? { ...b, loadingDigital: true } : b
                                 )
                               );
                               try {
-                                const res = await fetch(`/api/books/${book.id}/add-to-shelf`, { method: "POST" });
+                                const res = await fetch(
+                                  `/api/books/${book.id}/add-to-shelf`,
+                                  { method: "POST" }
+                                );
                                 const data = await res.json();
-                                console.log("SUCCESS =", data.success, typeof data.success);
                                 showToast(data.message, data.success ? "success" : "error");
                               } catch {
                                 showToast("Erro ao adicionar à estante", "error");
                               } finally {
                                 setBooks(prev =>
-                                  prev.map((b, i) =>
-                                    i === idx ? { ...b, loadingDigital: false } : b
+                                  prev.map(b =>
+                                    b.id === book.id ? { ...b, loadingDigital: false } : b
                                   )
                                 );
                               }
@@ -279,14 +307,13 @@ export default function BooksPageContent() {
                           </DropdownMenuItem>
                         )}
 
-                        {/* FÍSICO */}
                         {book.availableCopies > 0 ? (
                           <DropdownMenuItem
                             disabled={book.loadingPhysical}
                             onClick={async () => {
                               setBooks(prev =>
-                                prev.map((b, i) =>
-                                  i === idx ? { ...b, loadingPhysical: true } : b
+                                prev.map(b =>
+                                  b.id === book.id ? { ...b, loadingPhysical: true } : b
                                 )
                               );
                               try {
@@ -295,8 +322,10 @@ export default function BooksPageContent() {
                                 if (res.ok) {
                                   showToast("Empréstimo solicitado!", "success");
                                   setBooks(prev =>
-                                    prev.map((b, i) =>
-                                      i === idx ? { ...b, availableCopies: b.availableCopies - 1 } : b
+                                    prev.map(b =>
+                                      b.id === book.id
+                                        ? { ...b, availableCopies: b.availableCopies - 1 }
+                                        : b
                                     )
                                   );
                                 } else {
@@ -306,8 +335,8 @@ export default function BooksPageContent() {
                                 showToast("Erro ao solicitar empréstimo.", "error");
                               } finally {
                                 setBooks(prev =>
-                                  prev.map((b, i) =>
-                                    i === idx ? { ...b, loadingPhysical: false } : b
+                                  prev.map(b =>
+                                    b.id === book.id ? { ...b, loadingPhysical: false } : b
                                   )
                                 );
                               }
@@ -319,9 +348,8 @@ export default function BooksPageContent() {
                           <DropdownMenuItem disabled>🚫 Físico indisponível</DropdownMenuItem>
                         )}
 
-                        {/* Indisponível geral */}
                         {!book.is_digital && book.availableCopies === 0 && !book.loadingPhysical && (
-                          <DropdownMenuItem disabled>🚫 Indisponível</DropdownMenuItem>
+                          <DropdownMenuItem disabled>🚫 Digital Indisponível</DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -331,10 +359,13 @@ export default function BooksPageContent() {
             </TableBody>
           </Table>
 
-          {/* Paginação */}
           {totalPages > 1 && (
             <div className="flex justify-center py-4">
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                
+              />
             </div>
           )}
         </div>
