@@ -24,6 +24,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { truncateText } from "@/lib/utils";
 
 interface Book {
   id: number;
@@ -253,8 +254,8 @@ export default function BooksPageContent() {
             <TableBody>
               {books.map((book) => (
                 <TableRow key={book.id}>
-                  <TableCell>{book.title}</TableCell>
-                  <TableCell>{book.author}</TableCell>
+                  <TableCell>{truncateText(book.title)}</TableCell>
+                  <TableCell>{truncateText(book.author)}</TableCell>
                   <TableCell>{book.isbn}</TableCell>
                   <TableCell>
                     <span
