@@ -75,7 +75,7 @@ export default async function BorrowingsPage() {
                   <TableCell>{book.title}</TableCell>
                   <TableCell>{book.author}</TableCell>
                   <TableCell>
-                    <Button className="bg-blue-600" asChild>
+                    <Button className="bg-green-600" asChild>
                       <Link href={`/user/reader/${book.id}/${book.fileUrl}`}>
                         Ler livro
                       </Link>

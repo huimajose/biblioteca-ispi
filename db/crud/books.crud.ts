@@ -2,7 +2,7 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/neon-http";
 import { books, physicalBooks, userDigitalBooks  } from "@/drizzle/schema";
-import { eq, desc, count, sql, and, asc, like, or } from "drizzle-orm";
+import { eq, desc, count, sql, and, asc, like, or, inArray  } from "drizzle-orm";
 import { createTransactions } from "./transactions.crud";
 import { getCurrentDate, getReturnDatePlus7Days } from "@/utils/date";
 
@@ -576,7 +576,7 @@ export async function addBookToShelf(bookId: number, userIdd: string) {
  */
 export async function getUserDigitalBooks(userId: string) {
   try {
-    // 1️⃣ Buscar os registros da estante digital do usuário
+    // 1️⃣ Pegar os IDs dos livros digitais do usuário
     const userBooks = await db
       .select()
       .from(userDigitalBooks)
@@ -584,25 +584,15 @@ export async function getUserDigitalBooks(userId: string) {
 
     if (!userBooks.length) return [];
 
-    // 2️⃣ Pegar os IDs dos livros digitais
-    const bookIds = userBooks.map((ub) => ub.bookId);
+    const bookIds = userBooks.map((b) => b.bookId);
 
-    // 3️⃣ Buscar os detalhes completos desses livros na tabela books
+    // 2️⃣ Buscar os detalhes completos desses livros na tabela books usando inArray
     const booksData = await db
       .select()
       .from(books)
-      .where(sql`${books.id} IN (${sql.join(bookIds, ",")})`);
+      .where(inArray(books.id, bookIds));
 
-    // 4️⃣ Mapear para retornar dados combinados (opcional: adicionar info extra da estante)
-    const enrichedBooks = booksData.map((book) => {
-      const shelfEntry = userBooks.find((ub) => ub.bookId === book.id);
-      return {
-        ...book,
-        addedToShelfAt: shelfEntry?.addedAt || null,
-      };
-    });
-
-    return enrichedBooks;
+    return booksData;
   } catch (error) {
     console.error("Erro ao buscar livros digitais do usuário:", error);
     return [];

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/neon-http";
-import { physicalBooks, books } from "../schema";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { physicalBooks, books, userDigitalBooks } from "../schema";
+import { and, eq, sql } from "drizzle-orm";
 
 const db = drizzle(process.env.DATABASE_URL!);
 
@@ -31,6 +31,42 @@ export const readPhysicalBooks = async () => {
     console.log("Something Went Wrong :", error);
   }
 };
+
+export const readPhysicalBooksByUser = async (userId: string) => {
+  try {
+    const res = await db
+      .select()
+      .from(physicalBooks)
+      .where(
+        and(
+          eq(physicalBooks.userId, userId),
+          eq(physicalBooks.borrowed, true) // só livros emprestados
+        )
+      );
+
+    console.log("readPhysicalBooksByUser:", res);
+    return res;
+  } catch (error) {
+    console.log("Something Went Wrong :", error);
+    return [];
+  }
+};
+
+export const readDigitalBooks = async (userIdd: string) => {
+  try {
+    const res = await db
+      .select()
+      .from(userDigitalBooks)
+      .where(eq(userDigitalBooks.userId, userIdd)); // filtra pelo usuário
+
+    console.log("readDigitalBooks:", res);
+    return res;
+  } catch (error) {
+    console.log("Something Went Wrong :", error);
+    return [];
+  }
+};
+
 
 export const updatePhysicalBooks = async (pid: number, borrowed: boolean) => {
   try {

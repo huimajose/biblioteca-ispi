@@ -3,8 +3,8 @@ import { checkRole } from "@/utils/roles";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { readTransactions } from "@/db/crud/transactions.crud";
-import { readBooks } from "@/db/crud/books.crud";
-import { readPhysicalBooks } from "@/db/crud/physicalBooks.crud";
+import { getUserDigitalBooks, readBooks } from "@/db/crud/books.crud";
+import { readPhysicalBooks, readDigitalBooks, readPhysicalBooksByUser } from "@/db/crud/physicalBooks.crud";
 import { systemMetadata } from "@/db/schema";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
@@ -53,6 +53,14 @@ export default async function UserDashboard() {
     return false;
   });
 
+  const userDigitalBooks = await getUserDigitalBooks(user.id);
+  const userPhysicalBooksCount = await readPhysicalBooksByUser(user.id)
+
+  console.log("User Digital Books:", userDigitalBooks);
+  console.log("User Physical Books:", userPhysicalBooksCount);
+
+
+const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
   return (
     <div className="p-6">
       <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -74,7 +82,7 @@ export default async function UserDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-gray-600">Minha estante</p>
-            <p className="text-lg font-medium text-green-600"><a href="user/borrowings">{userPhysicalBooks.length}</a></p>
+            <p className="text-lg font-medium text-green-600"><a href="user/borrowings">{myShelfCount}</a></p>
           </div>
           <div>
             <p className="text-gray-600">Livros com data de entrega expirado</p>
