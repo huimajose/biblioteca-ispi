@@ -48,6 +48,7 @@ export const transactions = pgTable("transactions", {
   status: varchar("status", { length: 50 }).notNull(),
   borrowedDate: date("borrowed_date"),
   returnedDate: date("returned_date"),
+  user_name: varchar("user_name", { length: 255 }).notNull(),
 });
 
 export const physicalBooks = pgTable("physical_books", {

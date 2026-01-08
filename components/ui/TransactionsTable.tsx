@@ -2,7 +2,6 @@
 
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination } from "@/components/ui/pagination";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useState } from "react";
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/sheet"
 import { getBookDetails } from "@/app/user/books/actions/book.actions";
 import { Spinner } from "./spinner";
+import { TRANSACTION_STATUS } from "@/constants/transactionStatus";
 
 
 interface Transaction {
@@ -30,6 +30,7 @@ interface Transaction {
   returnedDate: string | null;
   userName?: string;
   bookTitle?: string;
+  user_name?: string;
 }
 
 interface TransactionsTableProps {
@@ -170,7 +171,7 @@ const [loadingBook, setLoadingBook] = useState(false);
                 <SortButton field="physicalBookId" label="ID do livro fisico" />
               </TableHead>
               <TableHead>
-                <SortButton field="userId" label="User ID" />
+                <SortButton field="userId" label="Requisitado por" />
               </TableHead>
               
               <TableHead>
@@ -192,20 +193,24 @@ const [loadingBook, setLoadingBook] = useState(false);
                 <td className="px-4 py-2">{tx.tid}</td>
 <td className="px-4 py-2">
   <div className="flex flex-col gap-1">
-    <span className="text-blue-600 font-medium">
-      #{tx.physicalBookId}
-    </span>
+   
 
     <Sheet>
       <SheetTrigger asChild>
         <Button
-      variant="secondary"
-      size="sm"
-      onClick={() => openBookDetails(tx.physicalBookId)}
-      className="px-3 py-1 text-blue-600 hover:text-blue-700"
-    >
-      📘 Detalhes
-    </Button>
+  variant="secondary"
+  size="sm"
+  onClick={() => openBookDetails(tx.physicalBookId)}
+  className="py-2 text-blue-600 hover:text-blue-700 flex items-center gap-2"
+>
+  <span className="font-mono text-sm">
+    #{tx.physicalBookId}
+  </span>
+  <span className="text-sm font-medium">
+    Detalhes
+  </span>
+</Button>
+
       </SheetTrigger>
 
       <SheetContent className="w-[400px] sm:w-[540px]">
@@ -262,9 +267,19 @@ const [loadingBook, setLoadingBook] = useState(false);
 </td>
 
 
-                <td className="px-4 py-2">{tx.userId}</td>
+                <td className="px-4 py-2">{tx.user_name}</td>
                 
-                <td className="px-4 py-2 capitalize">{tx.status}</td>
+               <td className="px-4 py-2">
+  <span
+    className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
+      TRANSACTION_STATUS[tx.status]?.className ??
+      "bg-gray-100 text-gray-800"
+    }`}
+  >
+    {TRANSACTION_STATUS[tx.status]?.label ?? tx.status}
+  </span>
+</td>
+
                 <td className="px-4 py-2">{tx.borrowedDate}</td>
                 <td className="px-4 py-2">{tx.returnedDate}</td>
                 <td className="px-4 py-2 flex gap-2">

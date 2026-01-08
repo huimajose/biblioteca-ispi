@@ -361,7 +361,7 @@ export const readSingleBook = async (bookId: number) => {
   }
 };
 
-export async function rentBook(bookId: number, userId: string) {
+export async function rentBook(bookId: number, userId: string, userName?: string) {
   try {
     // 1️⃣ Verifica se o livro existe
     const book = await db
@@ -402,7 +402,7 @@ export async function rentBook(bookId: number, userId: string) {
     const updatedPhysicalBook = await db
       .update(physicalBooks)
       .set({
-        borrowed: false,
+        borrowed: true,
         userId,
         returnDate: getReturnDatePlus7Days(),
       })
@@ -420,7 +420,7 @@ export async function rentBook(bookId: number, userId: string) {
       .where(eq(books.id, bookId));
 
     // 6️⃣ Cria transação de empréstimo
-    const trans_result = await createTransactions(bookId, userId, userId, "REQUESTED", getCurrentDate(), getReturnDatePlus7Days());
+    const trans_result = await createTransactions(bookId, userId, userId, "REQUESTED", getCurrentDate(), getReturnDatePlus7Days(), userName);
     if (!trans_result) {
       return { success: false, message: "Erro ao criar transação de empréstimo" };
     }

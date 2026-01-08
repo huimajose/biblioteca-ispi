@@ -9,7 +9,8 @@ export const createTransactions = async (
   adminId: string,
   status: string,
   borrowedDate: any,
-  returnedDate: string | undefined
+  returnedDate: string | undefined,
+  user_name: string | undefined
 ) => {
   try {
     const existingTransactions = await db
@@ -48,6 +49,7 @@ export const createTransactions = async (
       status,
       borrowedDate,
       returnedDate,
+      user_name
     };
 
     const [res] = await db.insert(transactions).values(transaction).returning({
@@ -56,6 +58,7 @@ export const createTransactions = async (
       status: transactions.status,
       borrowedDate: transactions.borrowedDate,
       returnedDate: transactions.returnedDate,
+      user_name: transactions.user_name
     });
 
     console.log("createTransactions:", res);

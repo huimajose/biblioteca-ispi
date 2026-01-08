@@ -88,12 +88,14 @@ export async function fetchUserTransactions() {
             console.log(`Looking up book ID ${bookId} for physical book ${tx.physicalBookId}`);
             const book = bookId ? bookMap.get(bookId) : null;
             console.log(`Found book for transaction ${tx.tid}:`, book);
+            const user = userMap.get(tx.userId);
             return {
                 ...tx,
                 bookTitle: book?.title || "Unknown Book",
                 bookAuthor: book?.author || "Unknown Author",
                 userEmail: userMap.get(tx.userId) || "Unknown",
-                adminEmail: "Unknown" // We'll handle admin emails separately if needed
+                adminEmail: "Unknown", // We'll handle admin emails separately if needed
+                user_name: user?.fullName ?? "Utilizador desconhecido"
             };
         });
 
