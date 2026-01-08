@@ -82,6 +82,19 @@ export async function readTransactions() {
   }
 }
 
+export async function readPendingBookRequests() {
+  try {
+    const result = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.status, "REQUESTED"));
+    return result;
+  } catch (error) {
+    console.error("Error reading pending book requests:", error);
+    return null;
+  }
+}
+
 export async function readTransactionById(id: number) {
   try {
     const result = await db

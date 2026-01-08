@@ -7,6 +7,16 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 import { useState } from "react";
 import { acceptTransaction, rejectTransaction } from "@/app/admin/book-requests/server"; // Import functions directly from server.tsx
 import { ClerkProvider, useAuth } from "@clerk/nextjs"; // Use hook here
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { getBookDetails } from "@/app/user/books/actions/book.actions";
+
 
 interface Transaction {
   tid: number;
@@ -38,6 +48,11 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [transactions, setTransactions] = useState(initialTransactions);
   const [loadingTransaction, setLoadingTransaction] = useState<number | null>(null); // Track the loading state for a specific transaction
+  const [selectedBook, setSelectedBook] = useState<any>(null);
+const [loadingBook, setLoadingBook] = useState(false);
+
+
+
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -110,6 +125,18 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
     </Button>
   );
 
+  const openBookDetails = async (bookId: number) => {
+  setLoadingBook(true);
+  setSelectedBook(null);
+
+  try {
+    const data = await getBookDetails(bookId);
+    setSelectedBook(data);
+  } finally {
+    setLoadingBook(false);
+  }
+};
+
   return (
     <ClerkProvider>
       <div className="p-6">
@@ -161,21 +188,85 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
             {sortedTransactions?.map((tx) => (
               <TableRow key={tx.tid}>
                 <td className="px-4 py-2">{tx.tid}</td>
-                <td className="px-4 py-2">{tx.bookTitle ?? `Livro #${tx.physicalBookId}`}</td>
+<td className="px-4 py-2">
+  <div className="flex flex-col gap-1">
+    <span className="text-blue-600 font-medium">
+      #{tx.physicalBookId}
+    </span>
+
+    <Sheet>
+      <SheetTrigger asChild>
+        <button
+          onClick={() => openBookDetails(tx.physicalBookId)}
+          className="text-sm text-blue-500 hover:text-blue-700 underline underline-offset-2 w-fit"
+        >
+          Ver detalhes
+        </button>
+      </SheetTrigger>
+
+      <SheetContent className="w-[400px] sm:w-[540px]">
+        <SheetHeader>
+          <SheetTitle>Detalhes do Livro</SheetTitle>
+          <SheetDescription>
+            Informação completa do exemplar físico
+          </SheetDescription>
+        </SheetHeader>
+
+        {loadingBook && (
+          <p className="mt-4 text-sm text-gray-500">A carregar…</p>
+        )}
+
+        {selectedBook && (
+          <div className="mt-4 space-y-2 text-sm">
+            <p><strong>Título:</strong> {selectedBook.title}</p>
+            <p><strong>Autor:</strong> {selectedBook.author}</p>
+            <p><strong>ISBN:</strong> {selectedBook.isbn}</p>
+            <p><strong>Estado:</strong> {selectedBook.status}</p>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  </div>
+</td>
+
+
                 <td className="px-4 py-2">{tx.userId}</td>
                 
                 <td className="px-4 py-2 capitalize">{tx.status}</td>
                 <td className="px-4 py-2">{tx.borrowedDate}</td>
                 <td className="px-4 py-2">{tx.returnedDate}</td>
                 <td className="px-4 py-2 flex gap-2">
+  {/* Mostrar botões apenas se ainda não foi aceito ou rejeitado */}
+  {tx.status !== "accepted" && tx.status !== "rejected" && (
+    <>
+      <Button
+        size="sm"
+        onClick={() => handleAccept(tx.tid)}
+        className="bg-green-500 hover:bg-green-600 text-white"
+        disabled={loadingTransaction === tx.tid}
+      >
+        {loadingTransaction === tx.tid ? "Processando..." : "Aceitar"}
+      </Button>
 
-                  {/* Show Reject button only if status is not accepted or rejected */}
-                  {tx.status !== "accepted" && tx.status !== "rejected" && (
-                    <Button size="sm" onClick={() => handleReject(tx.tid)} className="bg-red-500 hover:bg-red-600 text-white" disabled={loadingTransaction === tx.tid}>
-                      {loadingTransaction === tx.tid ? "Processando..." : "Rejeitar"}
-                    </Button>
-                  )}
-                </td>
+      <Button
+        size="sm"
+        onClick={() => handleReject(tx.tid)}
+        className="bg-red-500 hover:bg-red-600 text-white"
+        disabled={loadingTransaction === tx.tid}
+      >
+        {loadingTransaction === tx.tid ? "Processando..." : "Rejeitar"}
+      </Button>
+    </>
+  )}
+
+  {/* Caso já tenha sido aceito ou rejeitado, apenas mostra o estado */}
+  {(tx.status === "accepted" || tx.status === "rejected") && (
+    <span className={`px-2 py-1 rounded text-white ${tx.status === "accepted" ? "bg-green-600" : "bg-red-600"}`}>
+      {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+    </span>
+  )}
+</td>
+
               </TableRow>
             ))}
           </TableBody>

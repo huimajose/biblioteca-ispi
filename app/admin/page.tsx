@@ -3,10 +3,11 @@ import { checkRole, verifyAdmin } from "@/utils/roles";
 import { redirect } from "next/navigation";
 import { UsersIcon, BookOpenIcon, ClipboardDocumentCheckIcon, ClockIcon, BookmarkIcon, BookmarkSlashIcon, BookOpenIcon as AvailableBooksIcon } from "@heroicons/react/24/solid";
 import { getUserCount } from "@/db/crud/users.crud";
-import { readBooks } from "@/db/crud/books.crud";
+import { readBooks,  } from "@/db/crud/books.crud";
 import { readVerifyPending } from "@/db/crud/verifyPending.crud";
-import { readTransactions } from "@/db/crud/transactions.crud";
+import { readTransactions, readPendingBookRequests } from "@/db/crud/transactions.crud";
 import { currentUser } from "@clerk/nextjs/server";
+
 
 export default async function AdminDashboard() {
   //const isAdmin = await checkRole("admin");
@@ -21,6 +22,7 @@ export default async function AdminDashboard() {
   const { totalBooks, books } = await readBooks(1, 1000); // Get all books for counting
   const pendingUsers = await readVerifyPending();
   const transactions = await readTransactions() || [];
+  const pendingRequests = await readPendingBookRequests();
   const user = await currentUser()
 
   const isAdmin = await verifyAdmin(user.id)
@@ -102,6 +104,18 @@ export default async function AdminDashboard() {
             <div>
               <h2 className="text-xl font-semibold mb-2">Usuários pendentes</h2>
               <p className="text-4xl font-bold">{pendingUsers.length}</p>
+            </div>
+          </div>
+        </div>
+
+                <div className="bg-gradient-to-r from-red-500 to-pink-600 p-6 rounded-xl shadow-lg text-white">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center mb-4">
+              <ClipboardDocumentCheckIcon className="w-12 h-12 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Requisições pendentes</h2>
+              <p className="text-4xl font-bold"><a href="/admin/book-requests">{pendingRequests.length}</a></p>
             </div>
           </div>
         </div>

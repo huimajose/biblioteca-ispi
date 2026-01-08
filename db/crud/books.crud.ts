@@ -402,7 +402,7 @@ export async function rentBook(bookId: number, userId: string) {
     const updatedPhysicalBook = await db
       .update(physicalBooks)
       .set({
-        borrowed: true,
+        borrowed: false,
         userId,
         returnDate: getReturnDatePlus7Days(),
       })
@@ -420,7 +420,7 @@ export async function rentBook(bookId: number, userId: string) {
       .where(eq(books.id, bookId));
 
     // 6️⃣ Cria transação de empréstimo
-    const trans_result = await createTransactions(bookId, userId, userId, "borrowed", getCurrentDate(), getReturnDatePlus7Days());
+    const trans_result = await createTransactions(bookId, userId, userId, "REQUESTED", getCurrentDate(), getReturnDatePlus7Days());
     if (!trans_result) {
       return { success: false, message: "Erro ao criar transação de empréstimo" };
     }
@@ -555,12 +555,12 @@ export async function addBookToShelf(bookId: number, userIdd: string) {
     }
    await db.insert(userDigitalBooks).values({
       bookId,
-      userId: userIdd, // atenção: nome exato da coluna
+      userId: userIdd, 
     });
     
   return {
       success: true,
-      message: `Livro "${book[0].title}" adicionado à sua estante! 🎉`,
+      message: `Livro "${book[0].title}" adicionado à sua estante!`,
     };
   } catch (error) {
     console.error("❌ addBookToShelf error:", error);

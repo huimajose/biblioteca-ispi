@@ -55,13 +55,7 @@ export default function BannerHome() {
       icon: <FileText className="w-6 h-6 text-green-600" />,
       url: "/user/books?category=2",
     },
-    {
-      title: "Projetos",
-      description: "Projetos finais e iniciativas acadêmicas patrocinados.",
-      content: "Consulte projetos desenvolvidos em diversos cursos.",
-      icon: <FilePlus className="w-6 h-6 text-green-600" />,
-      url: "/user/books?category=3",
-    },
+    
     {
       title: "Artigos Científicos",
       description: "Pesquisas e artigos de revistas científicas.",
@@ -156,9 +150,7 @@ export default function BannerHome() {
           <Suspense fallback={<p>Carregando ...</p>}>
             <CounterHome type={1} />
           </Suspense>
-          <Suspense fallback={<p>Carregando ...</p>}>
-            <UserCounter />
-          </Suspense>
+     
           
           <StudentCount />
           <MonoCounter type={2} />
