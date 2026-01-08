@@ -2,6 +2,7 @@
 
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination } from "@/components/ui/pagination";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { getBookDetails } from "@/app/user/books/actions/book.actions";
+import { Spinner } from "./spinner";
 
 
 interface Transaction {
@@ -196,34 +198,64 @@ const [loadingBook, setLoadingBook] = useState(false);
 
     <Sheet>
       <SheetTrigger asChild>
-        <button
-          onClick={() => openBookDetails(tx.physicalBookId)}
-          className="text-sm text-blue-500 hover:text-blue-700 underline underline-offset-2 w-fit"
-        >
-          Ver detalhes
-        </button>
+        <Button
+      variant="secondary"
+      size="sm"
+      onClick={() => openBookDetails(tx.physicalBookId)}
+      className="px-3 py-1 text-blue-600 hover:text-blue-700"
+    >
+      📘 Detalhes
+    </Button>
       </SheetTrigger>
 
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
-          <SheetTitle>Detalhes do Livro</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className="text-center text-green-900">Detalhes do Livro</SheetTitle>
+          <SheetDescription className="text-center">
             Informação completa do exemplar físico
           </SheetDescription>
         </SheetHeader>
 
         {loadingBook && (
-          <p className="mt-4 text-sm text-gray-500">A carregar…</p>
+          <div className="mt-6 space-y-3">
+    <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+    <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse" />
+    <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse" />
+
+    <p className="text-sm text-gray-500 flex items-center gap-2">
+      <Spinner />
+      A carregar informações do livro…
+    </p>
+  </div>
         )}
 
         {selectedBook && (
-          <div className="mt-4 space-y-2 text-sm">
-            <p><strong>Título:</strong> {selectedBook.title}</p>
-            <p><strong>Autor:</strong> {selectedBook.author}</p>
-            <p><strong>ISBN:</strong> {selectedBook.isbn}</p>
-            <p><strong>Estado:</strong> {selectedBook.status}</p>
-          </div>
-        )}
+  <div className="ml-16 mt-6 space-y-4 text-sm">
+    <div>
+      <p className="text-xs text-gray-500">Título</p>
+      <p className="font-bold text-green-900">{selectedBook.title}</p>
+    </div>
+
+    <div>
+      <p className="text-xs text-gray-500">Autor</p>
+      <p className="font-bold text-green-900">{selectedBook.author}</p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <p className="text-xs text-gray-500">ISBN</p>
+        <p className="font-bold text-green-900">{selectedBook.isbn}</p>
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500">Cópias disponiveis</p>
+        <span className="inline-block rounded bg-blue-50 px-2 py-1 text-blue-700 text-xs font-medium">
+          {selectedBook.availableCopies}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
       </SheetContent>
     </Sheet>
   </div>
