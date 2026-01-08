@@ -21,7 +21,7 @@ export async function acceptTransaction(tid: number, userId: string | null | und
     }
 
     // Update the transaction status and dates
-    await updateTransactionsSuccess(tid, "accepted", userId);
+    await updateTransactionsSuccess(tid, "ACCEPTED", userId);
 
     // Update the physical book's borrowed status
     await updatePhysicalBooks(transaction[0].physicalBookId, true);
@@ -40,7 +40,7 @@ export async function rejectTransaction(tid: number, userId: string | null | und
   }
 
   // Call the database update function
-  await updateTransactions(tid, "rejected", userId);
+  await updateTransactions(tid, "REJECTED", userId);
   return { success: true, message: "Transaction rejected successfully" };
 }
 

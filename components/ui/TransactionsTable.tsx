@@ -65,9 +65,12 @@ const [loadingBook, setLoadingBook] = useState(false);
       setSortOrder("asc");
     }
   };
+  
 
   // Handle Accept Transaction
   const handleAccept = async (tid: number) => {
+console.log("book ID in handleAccept:", tid);
+
     try {
       if (!userId) {
         console.error("Unauthorized");
@@ -77,7 +80,7 @@ const [loadingBook, setLoadingBook] = useState(false);
       setLoadingTransaction(tid); // Set loading state for the specific transaction
       const response = await acceptTransaction(tid, userId); // Pass the userId from useAuth here
       if (response.success) {
-        setTransactions((prev) => prev.map((tx) => (tx.tid === tid ? { ...tx, status: "accepted" } : tx)));
+        setTransactions((prev) => prev.map((tx) => (tx.tid === tid ? { ...tx, status: "ACCEPTED" } : tx)));
       }
     } catch (err) {
       console.error("Error accepting transaction:", err);
@@ -284,7 +287,7 @@ const [loadingBook, setLoadingBook] = useState(false);
                 <td className="px-4 py-2">{tx.returnedDate}</td>
                 <td className="px-4 py-2 flex gap-2">
   {/* Mostrar botões apenas se ainda não foi aceito ou rejeitado */}
-  {tx.status !== "accepted" && tx.status !== "rejected" && (
+  {tx.status !== "ACCEPTED" && tx.status !== "REJECTED" && (
     <>
       <Button
         size="sm"
@@ -307,9 +310,9 @@ const [loadingBook, setLoadingBook] = useState(false);
   )}
 
   {/* Caso já tenha sido aceito ou rejeitado, apenas mostra o estado */}
-  {(tx.status === "accepted" || tx.status === "rejected") && (
-    <span className={`px-2 py-1 rounded text-white ${tx.status === "accepted" ? "bg-green-600" : "bg-red-600"}`}>
-      {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+  {(tx.status === "ACCEPTED" || tx.status === "REJECTED") && (
+    <span className={`px-2 py-1 rounded text-white ${tx.status === "ACCEPTED" ? "bg-green-600" : "bg-red-600"}`}>
+     {TRANSACTION_STATUS[tx.status]?.label || tx.status}
     </span>
   )}
 </td>
