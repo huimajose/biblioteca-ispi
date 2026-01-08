@@ -1,10 +1,9 @@
-
 import { Metadata } from "next";
-import { useAuth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { readTransactions } from "@/db/crud/transactions.crud";
 import { readBooks } from "@/db/crud/books.crud";
+import { getUserDigitalBooks } from "@/db/crud/books.crud"; // nova função
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { auth } from '@clerk/nextjs/server'
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -14,98 +13,113 @@ export const metadata: Metadata = {
 };
 
 export default async function BorrowingsPage() {
-
-
-  const { userId } = await auth()
-  
+  const { userId } = await auth();
 
   if (!userId) {
     throw new Error("Usuário não autenticado");
   }
 
-  // Get all transactions
+  // 📌 Livros físicos
   const transactions = await readTransactions();
-  if (!transactions) {
-    return <div>Nenhuma transação encontrada</div>;
-  }
-
-  // Filter for current user's active borrowings
   const activeBorrowings = transactions.filter(
-    tx => tx.userId === userId && tx.status === "borrowed"
+    (tx) => tx.userId === userId && tx.status === "ACCEPTED"
   );
+  const physicalBookIds = [...new Set(activeBorrowings.map((tx) => tx.physicalBookId))];
 
-  // Get unique book IDs
-  const bookIds = [...new Set(activeBorrowings.map(tx => tx.physicalBookId))];
-
-  // Fetch book details
-  const books = (
+  const physicalBooksData = (
     await Promise.all(
-      bookIds.map(async (id) => {
+      physicalBookIds.map(async (id) => {
         const book = await readBooks(1, 1, "id", "asc", id.toString());
-        return book.books[0]; // Pode retornar undefined
+        return book.books[0];
       })
     )
-  ).filter(Boolean); // Remove valores undefined
-  
+  ).filter(Boolean);
 
-  console.log('Livros: ', books)
+  const physicalBookMap = new Map(physicalBooksData.map((book) => [book.id, book]));
 
-  // Create lookup map
-  const bookMap = new Map(books.map(book => [book.id, book]));
-
-  // Enrich borrowings with book details
-  const enrichedBorrowings = activeBorrowings.map(tx => {
-    const book = bookMap.get(tx.physicalBookId);
+  const enrichedPhysicalBorrowings = activeBorrowings.map((tx) => {
+    const book = physicalBookMap.get(tx.physicalBookId);
     return {
       ...tx,
-      bookFile: book?.fileUrl || "",
       bookTitle: book?.title || "Unknown Book",
       bookAuthor: book?.author || "Unknown Author",
     };
   });
 
+  // 📌 Livros digitais
+  const digitalBooksData = await getUserDigitalBooks(userId); // busca direta da estante digital
+
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-green-600">Minha estante</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Mostrando {enrichedBorrowings.length} de livros ativos
+    <div className="p-6 space-y-12">
+      {/* 📱 Tabela de Livros Digitais */}
+      <div>
+        <h2 className="text-2xl font-bold text-green-600 mb-2">Livros digitais</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Mostrando {digitalBooksData.length} livros digitais disponíveis para leitura
         </p>
+
+        <div className="bg-white rounded-lg shadow">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead>Autor</TableHead>
+                <TableHead>Ação</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {digitalBooksData.map((book) => (
+                <TableRow key={book.id}>
+                  <TableCell>{book.id}</TableCell>
+                  <TableCell>{book.title}</TableCell>
+                  <TableCell>{book.author}</TableCell>
+                  <TableCell>
+                    <Button className="bg-blue-600" asChild>
+                      <Link href={`/user/reader/${book.id}/${book.fileUrl}`}>
+                        Ler livro
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Titulo</TableHead>
-              <TableHead>Autor</TableHead>
-              <TableHead>Data emprestimo</TableHead>
-              <TableHead>Data devolução</TableHead>
-              <TableHead>Ação</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {enrichedBorrowings.map((tx) => (
-              <TableRow key={tx.tid}>
-                <TableCell>{tx.tid}</TableCell>
-                <TableCell>{tx.bookTitle}</TableCell>
-                <TableCell>{tx.bookAuthor}</TableCell>
-                <TableCell>{tx.borrowedDate}</TableCell>
-                <TableCell>{tx.returnedDate || "Não devolvido"}</TableCell>
-                
-                <TableCell>
-                  <Button className="bg-green-600" asChild>
-                    <Link href={`/user/reader/${tx.physicalBookId}/${tx.bookFile}`}>
-                      Ler livro
-                    </Link>
+      {/* 📚 Tabela de Livros Físicos */}
+      <div>
+        <h2 className="text-2xl font-bold text-green-600 mb-2">Livros físicos</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Mostrando {enrichedPhysicalBorrowings.length} livros emprestados fisicamente
+        </p>
 
-                  </Button></TableCell>
+        <div className="bg-white rounded-lg shadow">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead>Autor</TableHead>
+                <TableHead>Data empréstimo</TableHead>
+                <TableHead>Data devolução</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {enrichedPhysicalBorrowings.map((tx) => (
+                <TableRow key={tx.tid}>
+                  <TableCell>{tx.tid}</TableCell>
+                  <TableCell>{tx.bookTitle}</TableCell>
+                  <TableCell>{tx.bookAuthor}</TableCell>
+                  <TableCell>{tx.borrowedDate}</TableCell>
+                  <TableCell>{tx.returnedDate || "Não devolvido"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
-} 
+}

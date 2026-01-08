@@ -570,3 +570,41 @@ export async function addBookToShelf(bookId: number, userIdd: string) {
     };
   }
 }
+
+/**
+ * Busca todos os livros digitais de um usuário, com detalhes completos do livro
+ */
+export async function getUserDigitalBooks(userId: string) {
+  try {
+    // 1️⃣ Buscar os registros da estante digital do usuário
+    const userBooks = await db
+      .select()
+      .from(userDigitalBooks)
+      .where(eq(userDigitalBooks.userId, userId));
+
+    if (!userBooks.length) return [];
+
+    // 2️⃣ Pegar os IDs dos livros digitais
+    const bookIds = userBooks.map((ub) => ub.bookId);
+
+    // 3️⃣ Buscar os detalhes completos desses livros na tabela books
+    const booksData = await db
+      .select()
+      .from(books)
+      .where(sql`${books.id} IN (${sql.join(bookIds, ",")})`);
+
+    // 4️⃣ Mapear para retornar dados combinados (opcional: adicionar info extra da estante)
+    const enrichedBooks = booksData.map((book) => {
+      const shelfEntry = userBooks.find((ub) => ub.bookId === book.id);
+      return {
+        ...book,
+        addedToShelfAt: shelfEntry?.addedAt || null,
+      };
+    });
+
+    return enrichedBooks;
+  } catch (error) {
+    console.error("Erro ao buscar livros digitais do usuário:", error);
+    return [];
+  }
+}
