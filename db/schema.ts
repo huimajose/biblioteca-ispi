@@ -67,3 +67,10 @@ export const userDigitalBooks = pgTable("user_digital_books", {
   userId: varchar("userid", { length: 255 }).notNull(), // FK para users.clerkId
   addedAt: timestamp("addedat").notNull().defaultNow(),
 });
+
+
+export const userScores = pgTable("user_scores", {
+  userId: varchar("user_id", { length: 255 }).primaryKey(), // FK para users.clerkId
+  points: integer("points").notNull().default(100),          // pontos do usuário, padrão 100
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(), // última atualização
+});

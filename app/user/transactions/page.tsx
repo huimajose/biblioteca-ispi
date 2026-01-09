@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { fetchUserTransactions } from "./server";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TRANSACTION_STATUS } from "@/constants/transactionStatus";
 
 export const metadata: Metadata = {
   title: "Minhas requisições | gestão biblioteca",
@@ -46,7 +47,7 @@ export default async function TransactionsPage() {
               <TableRow key={tx.tid}>
                 <TableCell>{tx.tid}</TableCell>
                 <TableCell>{tx.bookTitle}</TableCell>
-                <TableCell>{tx.status}</TableCell>
+                <TableCell>{TRANSACTION_STATUS[tx.status]?.label ?? tx.status}</TableCell>
                 <TableCell>{tx.borrowedDate}</TableCell>
                 <TableCell>{tx.returnedDate || "Não devolvido"}</TableCell>
               </TableRow>

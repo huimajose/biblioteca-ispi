@@ -4,7 +4,7 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { acceptTransaction, rejectTransaction, returnTransaction } from "@/app/admin/book-requests/server";
 import { useAuth } from "@clerk/nextjs";
 import {
@@ -52,12 +52,6 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
   const [loadingTransaction, setLoadingTransaction] = useState<number | null>(null);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [loadingBook, setLoadingBook] = useState(false);
-  const [renderToggle, setRenderToggle] = useState(false); // 🔹 Novo estado para forçar re-render
-
-  // 🔹 useEffect para atualizar a tabela quando algum returnedDate mudar
-  useEffect(() => {
-    setRenderToggle(prev => !prev);
-  }, [transactions.map(tx => tx.returnedDate).join(",")]); // dispara quando algum returnedDate mudar
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -69,10 +63,10 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
   };
 
   const handleAccept = async (tid: number) => {
-    try {
-      if (!userId) return console.error("Unauthorized");
+    if (!userId) return console.error("Unauthorized");
 
-      setLoadingTransaction(tid);
+    setLoadingTransaction(tid);
+    try {
       const response = await acceptTransaction(tid, userId);
       if (response.success) {
         setTransactions(prev => prev.map(tx => tx.tid === tid ? { ...tx, status: "ACCEPTED" } : tx));
@@ -85,10 +79,10 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
   };
 
   const handleReject = async (tid: number) => {
-    try {
-      if (!userId) return console.error("Unauthorized");
+    if (!userId) return console.error("Unauthorized");
 
-      setLoadingTransaction(tid);
+    setLoadingTransaction(tid);
+    try {
       const response = await rejectTransaction(tid, userId);
       if (response.success) {
         setTransactions(prev => prev.map(tx => tx.tid === tid ? { ...tx, status: "REJECTED" } : tx));
@@ -101,17 +95,16 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
   };
 
   const handleReturnByAdmin = async (tid: number, physicalBookId: number) => {
+    if (!userId) return console.error("Unauthorized");
+
+    setLoadingTransaction(tid);
     try {
-      if (!userId) return console.error("Unauthorized");
-
-      setLoadingTransaction(tid);
       const response = await returnTransaction(tid, physicalBookId);
-
       if (response.success) {
         setTransactions(prev =>
           prev.map(tx =>
             tx.tid === tid
-              ? { ...tx, returnedDate: new Date().toISOString().split("T")[0] } // Mantém status "ACCEPTED"
+              ? { ...tx, returnedDate: new Date().toISOString().split("T")[0] }
               : tx
           )
         );
@@ -270,7 +263,7 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
               <td className="px-4 py-2">{tx.returnedDate}</td>
 
               <td className="px-4 py-2 flex gap-2 items-center">
-                {tx.status === "PENDING" && (
+                {tx.status === "REQUESTED" && (
                   <>
                     <Button
                       size="sm"
