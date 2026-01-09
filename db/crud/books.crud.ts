@@ -598,3 +598,17 @@ export async function getUserDigitalBooks(userId: string) {
     return [];
   }
 }
+
+export const updateAvailableCopies = async (bookId: number, change: number) => {
+  try {
+    const res = await db
+      .update(books)
+      .set({ availableCopies: sql`${books.availableCopies} + ${change}` })
+      .where(eq(books.id, bookId));
+
+    return { success: res.rowCount === 1, bookId, change };
+  } catch (error) {
+    console.error("Erro ao atualizar quantidade de cópias:", error);
+    return { success: false, message: "Falha ao atualizar cópias" };
+  }
+};

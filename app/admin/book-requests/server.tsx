@@ -1,10 +1,12 @@
 "use server";
 
 import { readTransactions, updateTransactions, updateTransactionsSuccess, returnTransactionCrud } from "@/db/crud/transactions.crud"; // Assuming this is where the updateTransactions function resides
-import { updatePhysicalBooks } from "@/db/crud/physicalBooks.crud";
+import { updatePhysicalBooks, resetPhysicalBook  } from "@/db/crud/physicalBooks.crud";
 import { transactions } from "@/drizzle/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
+import { updateAvailableCopies } from "@/db/crud/books.crud";
+
 
 // Accept transaction function
 export async function acceptTransaction(tid: number, userId: string | null | undefined) {
@@ -50,10 +52,17 @@ export async function fetchTransactions() {
 }
 
 
-export async function returnTransaction(tid: number, adminId: string) {
+export async function returnTransaction(tid: number, bookId: number) {
   try {
-    const res = await returnTransactionCrud(tid, adminId);
-    return { success: true, message: "Livro marcado como devolvido", res };
+
+   
+
+    const res = await returnTransactionCrud(tid);
+
+    
+    const retPhysicallBook = await resetPhysicalBook(tid);
+    await updateAvailableCopies(bookId, 1);
+    return { success: true, message: "Livro marcado como devolvido", res, retPhysicallBook };
   } catch (err) {
     console.error("Erro ao marcar devolução:", err);
     return { success: false, message: "Erro ao marcar devolução" };

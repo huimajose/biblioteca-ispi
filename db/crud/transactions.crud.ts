@@ -252,6 +252,7 @@ export const returnTransactionCrud = async (tid: number) => {
       .where(eq(transactions.tid, tid));
 
     // Retorne apenas dados simples
+    
     return { success: res.rowCount === 1, tid };
   } catch (error) {
     console.error("Error updating transaction to return:", error);

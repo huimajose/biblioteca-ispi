@@ -152,3 +152,22 @@ export const findOneAvailablePhysicalBookId = async (bookId: number): Promise<nu
     throw error;
   }
 };
+
+export const resetPhysicalBook = async (pidd: number) => {
+  try {
+    const res = await db
+      .update(physicalBooks)
+      .set({
+        borrowed: false,
+        returnDate: null,
+        userId: null,
+        currTransactionId: 0,
+      })
+      .where(eq(physicalBooks.pid, pidd));
+
+    return true;
+  } catch (error) {
+    console.error("Error resetting physical book:", error);
+    throw new Error("Failed to reset physical book.");
+  }
+};
