@@ -4,6 +4,8 @@ import { createTransactions, getUserTransactionStatus, returnTransaction } from 
 import { readSingleBook } from "@/db/crud/books.crud";
 import { findOneAvailablePhysicalBookId } from "@/db/crud/physicalBooks.crud";
 import { getAcceptedTransaction } from "@/db/crud/transactions.crud";
+import redis from "@/lib/redis";
+import { getBookCover } from "@/services/bookCover.service";
 
 export async function handleBorrowBook(bookId: number, userId: string) {
   try {
@@ -47,13 +49,31 @@ export async function handleBorrowBook(bookId: number, userId: string) {
 
 export async function fetchBookDetails(bookId: number) {
   try {
-    const book = await readSingleBook(bookId); // use the new readSingleBook
-    return book;
+    const book = await readSingleBook(bookId);
+    if (!book) return null;
+
+    // 🔹 Tenta pegar a capa no Redis
+    let cover = await redis.get(`book_cover:${book.isbn}`);
+
+    if (!cover) {
+      // 🔍 Busca capa externa se não existir no Redis
+      const result = await getBookCover({ isbn: book.isbn, title: book.title });
+      cover = result.url;
+
+      // ⚡ Salva no Redis com expiração de 7 dias
+      await redis.set(`book_cover:${book.isbn}`, cover, "EX", 60 * 60 * 24 * 7);
+    }
+
+    return {
+      ...book,
+      cover,
+    };
   } catch (error) {
     console.error("Error fetching book details:", error);
     return null;
   }
 }
+
 
 export async function checkUserBookStatus(bookId: number, userId: string) {
   try {

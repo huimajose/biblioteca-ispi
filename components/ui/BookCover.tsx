@@ -24,8 +24,8 @@ export function BookCover({
 }: BookCoverProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Se a capa for nula, vazia ou ocorreu erro, mostra a imagem padrão
-  if (!cover || cover === "null" || imageError) {
+  // 🔹 Verificação reforçada de capa
+  if (!cover || cover.trim() === "" || cover === "null" || imageError) {
     return (
       <Image
         alt={`${title} cover`}
@@ -37,7 +37,6 @@ export function BookCover({
     );
   }
 
-  // Caso contrário, mostra a imagem hospedada no ImageKit
   return (
     <ImageKitProvider publicKey={publicKey} urlEndpoint={urlEndpoint}>
       <IKImage

@@ -1,10 +1,12 @@
+import { getCachedCover, setCachedCover } from "@/services/bookCoverCache";
+
 type CoverResult = {
   url: string;
   source: "openlibrary" | "googlebooks" | "default";
 };
 
-const DEFAULT_COVER =
-  "/images/book-placeholder.png"; 
+const DEFAULT_COVER = "/images/book-placeholder.png";
+
 /* --------------------------------------------------
    1️⃣ Open Library (ISBN)
 -------------------------------------------------- */
@@ -13,8 +15,7 @@ async function getCoverFromOpenLibrary(isbn: string): Promise<string | null> {
 
   try {
     const res = await fetch(url, { method: "HEAD" });
-    if (res.ok) return url;
-    return null;
+    return res.ok ? url : null;
   } catch {
     return null;
   }
@@ -36,18 +37,18 @@ async function getCoverFromGoogleBooks(
     const res = await fetch(url);
     const data = await res.json();
 
-    const cover =
+    return (
       data?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail ??
-      data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail;
-
-    return cover || null;
+      data?.items?.[0]?.volumeInfo?.imageLinks?.smallThumbnail ??
+      null
+    );
   } catch {
     return null;
   }
 }
 
 /* --------------------------------------------------
-   3️⃣ Serviço principal
+   3️⃣ Serviço principal (com Redis)
 -------------------------------------------------- */
 export async function getBookCover({
   isbn,
@@ -56,31 +57,48 @@ export async function getBookCover({
   isbn?: string;
   title?: string;
 }): Promise<CoverResult> {
-  // 1️⃣ Tenta ISBN no Open Library
+
+  // 🧠 0️⃣ Redis primeiro (se houver ISBN)
+  if (isbn) {
+    const cached = await getCachedCover(isbn);
+    if (cached) return cached;
+  }
+
+  let result: CoverResult | null = null;
+
+  // 1️⃣ Open Library por ISBN
   if (isbn) {
     const openLibCover = await getCoverFromOpenLibrary(isbn);
     if (openLibCover) {
-      return { url: openLibCover, source: "openlibrary" };
-    }
-
-    // 2️⃣ ISBN no Google Books
-    const googleCover = await getCoverFromGoogleBooks(isbn, true);
-    if (googleCover) {
-      return { url: googleCover, source: "googlebooks" };
+      result = { url: openLibCover, source: "openlibrary" };
     }
   }
 
-  // 3️⃣ Título no Google Books
-  if (title) {
+  // 2️⃣ Google Books por ISBN
+  if (!result && isbn) {
+    const googleCover = await getCoverFromGoogleBooks(isbn, true);
+    if (googleCover) {
+      result = { url: googleCover, source: "googlebooks" };
+    }
+  }
+
+  // 3️⃣ Google Books por título
+  if (!result && title) {
     const googleCover = await getCoverFromGoogleBooks(title, false);
     if (googleCover) {
-      return { url: googleCover, source: "googlebooks" };
+      result = { url: googleCover, source: "googlebooks" };
     }
   }
 
   // 4️⃣ Fallback
-  return {
-    url: DEFAULT_COVER,
-    source: "default",
-  };
+  if (!result) {
+    result = { url: DEFAULT_COVER, source: "default" };
+  }
+
+  // 💾 5️⃣ Guardar no Redis (apenas se houver ISBN)
+  if (isbn) {
+    await setCachedCover(isbn, result);
+  }
+
+  return result;
 }

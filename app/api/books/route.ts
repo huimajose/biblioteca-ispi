@@ -54,7 +54,7 @@ if (searchParams.get("recent") === "true") {
 
   return NextResponse.json(enrichedBooks);
 }
-
+  const page = parseInt(searchParams.get("page") || "1"); // 🔹 aqui
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const sort = searchParams.get("sort") || "title";
     const order = searchParams.get("order") || "asc";

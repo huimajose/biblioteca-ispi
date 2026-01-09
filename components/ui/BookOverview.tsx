@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { IKImage, ImageKitProvider } from "imagekitio-next";
 
@@ -39,6 +39,8 @@ const BookOverview = ({
   loading: boolean;
   transaction: any;
 }) => {
+  const [imageError, setImageError] = useState(false);
+
   const getButtonText = () => {
     if (loading) return "Processando...";
     if (transaction?.status === "RETURN") return "Return Requested";
@@ -48,24 +50,30 @@ const BookOverview = ({
     return "+ Leitura";
   };
 
+  const getSafeCover = (url: string) => {
+  if (!url) return defaultCover;
+  // Força HTTPS
+  return url.startsWith("http://") ? url.replace("http://", "https://") : url;
+};
+
   const isDisabled =
     loading ||
     transaction?.status === "RETURN" ||
     (!borrowed && !requested && !maxBorrowed);
 
-  // ✅ Define capa exibida
+  // ✅ Determina a capa que vai mostrar
   const displayCover =
-    cover && cover.trim() !== "" && cover !== "null" ? cover : defaultCover;
+    !cover || cover.trim() === "" || cover === "null" || imageError
+      ? defaultCover
+      : cover;
 
-  // ✅ Detecta se a capa vem do ImageKit
+  // ✅ Detecta se é capa do ImageKit
   const isImageKitCover = displayCover.includes("book-cover_");
 
-  // ✅ Remove / inicial caso exista (ImageKit não precisa)
+  // ✅ Normaliza o caminho do ImageKit
   const normalizedCover = displayCover.startsWith("/")
     ? displayCover.substring(1)
     : displayCover;
-
-  console.log("Capa recebida:", cover);
 
   return (
     <section className="flex flex-col-reverse text-green-600 items-center justify-around gap-12 sm:gap-32 xl:flex-row xl:gap-8 mx-10 my-10 w-full max-w-7xl">
@@ -122,11 +130,12 @@ const BookOverview = ({
           </ImageKitProvider>
         ) : (
           <Image
-            src={defaultCover}
+           src={getSafeCover(displayCover)}
             alt="Book cover"
             width={300}
             height={400}
             className="rounded-lg shadow-lg object-cover"
+            onError={() => setImageError(true)} // fallback automático para default
           />
         )}
       </div>
