@@ -100,7 +100,7 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
 
       {userPhysicalBooks.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4 text-green-600">Estante de livros</h2>
+          <h2 className="text-xl font-semibold mb-4 text-green-600">Estante Livros Fisicos</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead className="bg-gray-50">

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     `;
 
     // envia email para o destinatário (biblioteca)
-    await sendMail(process.env.CONTACT_RECEIVERR || "huima.jose@hotmail.com", content);
+    await sendMail(process.env.CONTACT_RECEIVERR || "sti@ispi.edu.ao", content);
 
     return NextResponse.json({ success: true });
   } catch (err) {

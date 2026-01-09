@@ -4,6 +4,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { readBooks, updateBookFileUrl } from "@/db/crud/books.crud";
 import { createClient } from "@supabase/supabase-js";
 import { getRecentBooks } from "@/db/crud/books.crud";
+import { getBookCover } from "@/services/bookCover.service";
 
 
 // Inicializa o Supabase Client
@@ -20,17 +21,40 @@ export async function GET(request: NextRequest){
     
     
 
-    if (searchParams.get("recent") === "true") {
-      console.log("📚 Requisição recebida: livros recentes");
-      const recentBooks = await getRecentBooks();
-      console.log("✅ Livros recentes encontrados:", recentBooks.length);
-      return NextResponse.json(recentBooks);
-    }
+if (searchParams.get("recent") === "true") {
+  console.log("📚 Requisição recebida: livros recentes");
 
+  const recentBooks = await getRecentBooks();
 
+  const enrichedBooks = await Promise.all(
+    recentBooks.map(async (book) => {
+      // 🟢 Se já tem capa, não faz nada
+      if (book.cover) return book;
 
+      // 🔍 Buscar capa externa
+      const cover = await getBookCover({
+        isbn: book.isbn,
+        title: book.title,
+      });
 
-    const page = parseInt(searchParams.get("page") || "1");
+      if (!cover?.url) return book;
+
+      // 💾 (opcional, mas recomendado) guardar no banco
+      // await updateBookCover(book.id, cover.url);
+
+      return {
+        ...book,
+        cover: cover.url,
+        coverSource: cover.source, // OpenLibrary | Google | etc
+      };
+    })
+  );
+
+  console.log("✅ Livros recentes enriquecidos:", enrichedBooks.length);
+
+  return NextResponse.json(enrichedBooks);
+}
+
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const sort = searchParams.get("sort") || "title";
     const order = searchParams.get("order") || "asc";

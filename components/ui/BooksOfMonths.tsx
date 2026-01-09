@@ -50,23 +50,35 @@ export default function RecentBooks() {
             <Link key={book.id} href={`/book/${book.id}`}>
               <Card className="cursor-pointer hover:shadow-lg transition flex flex-col h-[320px]">
                 <div className="relative w-full h-48">
-                  {book.cover ? (
-                    // ✅ Capa do banco (ImageKit)
-                    <IKImage
-                      path={book.cover}
-                      alt={book.title}
-                      transformation={[{ width: 300, height: 400 }]}
-                      className=" object-cover w-full h-full"
-                    />
-                  ) : (
-                    // ✅ Capa padrão local
-                    <Image
-                      src="/cover_2.jpeg"
-                      alt="Capa padrão"
-                      fill
-                      className="object-cover "
-                    />
-                  )}
+{book.cover ? (
+  book.cover.startsWith("http") ? (
+    // 🌍 Capa externa (OpenLibrary / Google)
+    <Image
+      src={book.cover}
+      alt={book.title}
+      fill
+      className="object-cover"
+      unoptimized
+    />
+  ) : (
+    // ☁️ Capa no ImageKit
+    <IKImage
+      path={book.cover}
+      alt={book.title}
+      transformation={[{ width: 300, height: 400 }]}
+      className="object-cover w-full h-full"
+    />
+  )
+) : (
+  // 📕 Fallback local
+  <Image
+    src="/cover_2.jpeg"
+    alt="Capa padrão"
+    fill
+    className="object-cover"
+  />
+)}
+
                 </div>
 
                 <CardContent className="p-2 flex-1 flex flex-col justify-between">

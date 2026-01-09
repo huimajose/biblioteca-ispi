@@ -50,12 +50,12 @@ export default function StudentCount() {
         <Card className="mb-5">
             <CardHeader className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-2">
-                    <BookOpen className="w-6 h-6 text-green-600" />
-                    <CardTitle className="text-green-600 ">Estudantes</CardTitle>
+                    <BookOpen className="w-5 h-6 text-green-600" />
+                    <CardTitle className="text-green-600 ">Usuários</CardTitle>
                 </div>
                
                 <CardDescription className="t">
-                Estudantes conectados, aprendizado sem limites!
+                Usuários conectados, aprendizado sem limites!
                 </CardDescription>
             </CardHeader>
             <CardContent>
