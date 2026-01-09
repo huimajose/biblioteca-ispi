@@ -1,6 +1,6 @@
 "use server";
 
-import { readTransactions, updateTransactions, updateTransactionsSuccess } from "@/db/crud/transactions.crud"; // Assuming this is where the updateTransactions function resides
+import { readTransactions, updateTransactions, updateTransactionsSuccess, returnTransactionCrud } from "@/db/crud/transactions.crud"; // Assuming this is where the updateTransactions function resides
 import { updatePhysicalBooks } from "@/db/crud/physicalBooks.crud";
 import { transactions } from "@/drizzle/schema";
 import { db } from "@/db";
@@ -47,4 +47,15 @@ export async function rejectTransaction(tid: number, userId: string | null | und
 // Fetch all transactions (already implemented in your `server.tsx`)
 export async function fetchTransactions() {
   return await readTransactions(); // This reads transactions from the DB
+}
+
+
+export async function returnTransaction(tid: number, adminId: string) {
+  try {
+    const res = await returnTransactionCrud(tid, adminId);
+    return { success: true, message: "Livro marcado como devolvido", res };
+  } catch (err) {
+    console.error("Erro ao marcar devolução:", err);
+    return { success: false, message: "Erro ao marcar devolução" };
+  }
 }

@@ -21,7 +21,7 @@ export const TRANSACTION_STATUS: Record<
     label: "Rejeitado",
     className: "bg-red-100 text-red-800",
   },
-  RETURNED: {
+  RETURN: {
     label: "Devolvido",
     className: "bg-blue-100 text-blue-800",
   },

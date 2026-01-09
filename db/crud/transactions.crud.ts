@@ -244,17 +244,17 @@ export const getAcceptedTransaction = async (userId: string, bookId: number) => 
   }
 };
 
-export const returnTransaction = async (tid: number) => {
+export const returnTransactionCrud = async (tid: number) => {
   try {
     const res = await db
       .update(transactions)
-      .set({ status: "RETURN" }) // Update status to "RETURN"
+      .set({ status: "RETURNED" })
       .where(eq(transactions.tid, tid));
 
-    console.log("returnTransaction:", res);
-    return res;
+    // Retorne apenas dados simples
+    return { success: res.rowCount === 1, tid };
   } catch (error) {
     console.error("Error updating transaction to return:", error);
-    throw new Error("Failed to update transaction to return.");
+    return { success: false, message: "Falha ao marcar devolução" };
   }
 };

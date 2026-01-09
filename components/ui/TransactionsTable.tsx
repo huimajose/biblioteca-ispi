@@ -5,7 +5,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useState } from "react";
-import { acceptTransaction, rejectTransaction } from "@/app/admin/book-requests/server"; // Import functions directly from server.tsx
+import { acceptTransaction, rejectTransaction, returnTransaction } from "@/app/admin/book-requests/server"; // Import functions directly from server.tsx
 import { ClerkProvider, useAuth } from "@clerk/nextjs"; // Use hook here
 import {
   Sheet,
@@ -108,6 +108,36 @@ console.log("book ID in handleAccept:", tid);
       setLoadingTransaction(null); // Reset loading state once the action is complete
     }
   };
+
+
+const handleReturnByAdmin = async (tid: number) => {
+  try {
+    if (!userId) {
+      console.error("Unauthorized");
+      return;
+    }
+
+    setLoadingTransaction(tid);
+
+    // Chama a função do server
+    const response = await returnTransaction(tid, userId);
+
+    if (response.success) {
+      setTransactions((prev) =>
+        prev.map((tx) =>
+          tx.tid === tid
+            ? { ...tx, status: "RETURN", returnedDate: new Date().toISOString().split("T")[0] }
+            : tx
+        )
+      );
+    }
+  } catch (err) {
+    console.error("Erro ao marcar devolução:", err);
+  } finally {
+    setLoadingTransaction(null);
+  }
+};
+
 
   const sortedTransactions = [...transactions].sort((a, b) => {
     const aValue = a[sortField];
@@ -286,8 +316,9 @@ console.log("book ID in handleAccept:", tid);
                 <td className="px-4 py-2">{tx.borrowedDate}</td>
                 <td className="px-4 py-2">{tx.returnedDate}</td>
                 <td className="px-4 py-2 flex gap-2">
-  {/* Mostrar botões apenas se ainda não foi aceito ou rejeitado */}
-  {tx.status !== "ACCEPTED" && tx.status !== "REJECTED" && (
+  <td className="px-4 py-2 flex gap-2">
+  {/* Botões Aceitar/Rejeitar */}
+  {tx.status === "PENDING" && (
     <>
       <Button
         size="sm"
@@ -309,12 +340,33 @@ console.log("book ID in handleAccept:", tid);
     </>
   )}
 
-  {/* Caso já tenha sido aceito ou rejeitado, apenas mostra o estado */}
-  {(tx.status === "ACCEPTED" || tx.status === "REJECTED") && (
-    <span className={`px-2 py-1 rounded text-white ${tx.status === "ACCEPTED" ? "bg-green-600" : "bg-red-600"}`}>
-     {TRANSACTION_STATUS[tx.status]?.label || tx.status}
+  {/* Status já processado (ACCEPTED, REJECTED, RETURN) */}
+  {tx.status !== "PENDING" && (
+    <span
+      className={`px-2 py-1 rounded text-white ${
+        tx.status === "ACCEPTED" ? "bg-green-600" :
+        tx.status === "REJECTED" ? "bg-red-600" :
+        "bg-blue-600" // RETURN
+      }`}
+    >
+      {TRANSACTION_STATUS[tx.status]?.label || tx.status}
     </span>
   )}
+
+  {/* Botão Devolução */}
+  {tx.status === "ACCEPTED" && !tx.returnedDate && (
+    <Button
+      size="sm"
+      onClick={() => handleReturnByAdmin(tx.tid)}
+      className="bg-blue-600 hover:bg-blue-700 text-white"
+      disabled={loadingTransaction === tx.tid}
+    >
+      {loadingTransaction === tx.tid ? "Processando..." : "Confirmar Devolução"}
+    </Button>
+  )}
+</td>
+
+
 </td>
 
               </TableRow>
