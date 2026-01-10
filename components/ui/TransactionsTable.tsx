@@ -18,6 +18,7 @@ import {
 import { getBookDetails } from "@/app/user/books/actions/book.actions";
 import { Spinner } from "./spinner";
 import { TRANSACTION_STATUS } from "@/constants/transactionStatus";
+import { useToast } from "@/components/ui/ToastContext";
 
 interface Transaction {
   tid: number;
@@ -52,6 +53,7 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
   const [loadingTransaction, setLoadingTransaction] = useState<number | null>(null);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [loadingBook, setLoadingBook] = useState(false);
+    const { showToast } = useToast();
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -61,22 +63,38 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
       setSortOrder("asc");
     }
   };
+const handleAccept = async (tid: number) => {
+  if (!userId) {
+    console.error("Unauthorized");
+    return;
+  }
 
-  const handleAccept = async (tid: number) => {
-    if (!userId) return console.error("Unauthorized");
+  setLoadingTransaction(tid);
 
-    setLoadingTransaction(tid);
-    try {
-      const response = await acceptTransaction(tid, userId);
-      if (response.success) {
-        setTransactions(prev => prev.map(tx => tx.tid === tid ? { ...tx, status: "ACCEPTED" } : tx));
-      }
-    } catch (err) {
-      console.error("Error accepting transaction:", err);
-    } finally {
-      setLoadingTransaction(null);
+  try {
+    const response = await acceptTransaction(tid, userId);
+
+    console.log("Accept transaction response:", response);
+    if (!response.success) {
+      // 🔔 feedback claro para o admin
+      
+      showToast(response.message, response.success ? "success" : "error");
+      return;
     }
-  };
+
+    // ✅ Atualiza estado local
+    setTransactions(prev =>
+      prev.map(tx =>
+        tx.tid === tid ? { ...tx, status: "ACCEPTED" } : tx
+      )
+    );
+  } catch (err) {
+    console.error("Error accepting transaction:", err);
+    alert("Erro inesperado ao aceitar a transação");
+  } finally {
+    setLoadingTransaction(null);
+  }
+};
 
   const handleReject = async (tid: number) => {
     if (!userId) return console.error("Unauthorized");
@@ -284,7 +302,9 @@ export default function TransactionsTable({ initialTransactions, totalPages, tot
                   </>
                 )}
 
-                {tx.status === "ACCEPTED" && !tx.returnedDate && (
+                {tx.status === "ACCEPTED" &&
+ (tx.returnedDate === null || tx.returnedDate === "") && (
+
                   <Button
                     size="sm"
                     onClick={() => handleReturnByAdmin(tx.tid, tx.physicalBookId)}

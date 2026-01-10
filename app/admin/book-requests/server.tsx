@@ -6,6 +6,7 @@ import { transactions } from "@/drizzle/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { updateAvailableCopies } from "@/db/crud/books.crud";
+import { canUserBorrowBook } from "@/services/userScore.service";
 
 
 // Accept transaction function
@@ -20,6 +21,17 @@ export async function acceptTransaction(tid: number, userId: string | null | und
 
     if (!transaction || transaction.length === 0) {
       throw new Error("Transaction not found");
+    }
+
+  
+
+    // Check if user can borrow book
+    const borrowCheck = await canUserBorrowBook(userId);
+
+    console.log("Borrow check result:", borrowCheck);
+    
+    if (!borrowCheck.allowed) {
+      return { success: false, message: borrowCheck.reason };
     }
 
     // Update the transaction status and dates

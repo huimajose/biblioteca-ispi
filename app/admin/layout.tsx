@@ -4,6 +4,8 @@ import Header from "@/components/admin/Header";
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptPT } from "@clerk/localizations";
+import { ToastProvider } from "@/components/ui/ToastContext";
+
 
 export const metadata: Metadata = {
   title: {
@@ -16,6 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider localization={ptPT}>
+      <ToastProvider>
       <html lang="en">
         <body className="bg-indigo-100/75">
           <main className="flex">
@@ -27,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
         </body>
       </html>
+      </ToastProvider>
     </ClerkProvider>
   );
 }

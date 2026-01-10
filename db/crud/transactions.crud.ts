@@ -232,7 +232,7 @@ export const getAcceptedTransaction = async (userId: string, bookId: number) => 
         and(
           eq(transactions.userId, userId),
           eq(physicalBooks.bookId, bookId),
-          eq(transactions.status, "accepted") // Case-sensitive match
+          eq(transactions.status, "ACCEPTED") // Case-sensitive match
         )
       )
       .limit(1);
