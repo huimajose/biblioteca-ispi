@@ -85,7 +85,7 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
             <p className="text-lg font-medium text-green-600">{overdueBooks.length}</p>
           </div>
           <div>
-            <p className="text-gray-600">Pontação</p>
+            <p className="text-gray-600">Pontuação</p>
             <p className="text-lg font-medium text-green-600"><a href="user/borrowings">{myShelfCount}</a></p>
           </div>
          

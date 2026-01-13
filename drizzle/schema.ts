@@ -43,10 +43,11 @@ export const transactions = pgTable("transactions", {
   status: varchar({ length: 50 }).notNull(),
   borrowedDate: date("borrowed_date").defaultNow().notNull(),
   returnedDate: date("returned_date"),
+  scoreApplied: boolean("score_applied").default(false).notNull(),
 });
 
 export const books = pgTable(
-  "books",
+  "books_temp",
   {
     id: serial().primaryKey().notNull(),
     title: varchar({ length: 255 }).notNull(),

@@ -23,7 +23,7 @@ export const systemMetadata = pgTable("systemMetadata", {
   maxDays: integer().notNull().default(15),
 });
 
-export const books = pgTable("books", {
+export const books = pgTable("books_temp", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   author: varchar("author", { length: 255 }).notNull(),
@@ -49,6 +49,8 @@ export const transactions = pgTable("transactions", {
   borrowedDate: date("borrowed_date"),
   returnedDate: date("returned_date"),
   user_name: varchar("user_name", { length: 255 }).notNull(),
+  scoreApplied: boolean("score_applied").default(false)
+
 });
 
 export const physicalBooks = pgTable("physical_books", {
@@ -73,4 +75,14 @@ export const userScores = pgTable("user_scores", {
   userId: varchar("user_id", { length: 255 }).primaryKey(), // FK para users.clerkId
   points: integer("points").notNull().default(100),          // pontos do usuário, padrão 100
   lastUpdated: timestamp("last_updated").notNull().defaultNow(), // última atualização
+});
+
+
+export const notifications = pgTable("notifications", {
+  id: serial().primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: varchar("message", { length: 500 }).notNull(),
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

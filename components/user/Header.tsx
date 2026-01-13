@@ -1,28 +1,14 @@
-import { currentUser } from '@clerk/nextjs/server'
+"use client";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
-import Link from 'next/link';
+import Link from "next/link";
+import NotificationBell from "../NotificationBell";
 
-const Header = async () => {
-  const user = await currentUser()
-
-  if (!user) return <div>Não logado</div>
-
+const Header = () => {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-
-        },
-      }}
-    >
+    <ClerkProvider>
       <header className="flex w-full h-16 bg-white justify-between px-5 rounded-sm mb-6">
         <div className="py-2 px-4">
-          <h2 className="text-2xl font-bold text-grey-400">
-          
-          </h2>
-          <p className="text-xl text-grey-400">
-            
-          </p>
+          <h2 className="text-2xl font-bold text-grey-400"></h2>
         </div>
         <div className="flex items-center justify-center gap-5 pr-4">
           <Link href="/">
@@ -31,13 +17,15 @@ const Header = async () => {
             </button>
           </Link>
 
+          <NotificationBell />
+
           <div className="scale-125 flex items-center justify-center">
             <UserButton />
           </div>
         </div>
       </header>
     </ClerkProvider>
-  )
-}
+  );
+};
 
-export default Header; 
+export default Header;

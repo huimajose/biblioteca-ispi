@@ -1,12 +1,13 @@
 "use server";
 
-import { readTransactions, updateTransactions, updateTransactionsSuccess, returnTransactionCrud } from "@/db/crud/transactions.crud"; // Assuming this is where the updateTransactions function resides
-import { updatePhysicalBooks, resetPhysicalBook, checkAvailablePhysicalBooks  } from "@/db/crud/physicalBooks.crud";
+import { readTransactions, updateTransactions, updateTransactionsSuccess, returnTransactionCrud, readTransactionById } from "@/db/crud/transactions.crud"; // Assuming this is where the updateTransactions function resides
+import { updatePhysicalBooks, resetPhysicalBook, checkAvailablePhysicalBooks, updatePhysicalBookActive, updatePhysicalBookActiveNew  } from "@/db/crud/physicalBooks.crud";
 import { transactions } from "@/drizzle/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { updateAvailableCopies } from "@/db/crud/books.crud";
 import { canUserBorrowBook, updateUserScoreOnReturn } from "@/services/userScore.service";
+import { notifyBookAccepted, notifyBookRejected, notifyBookReturned } from "@/services/notification.service";
 
 
 // Accept transaction function
@@ -18,9 +19,12 @@ export async function acceptTransaction(tid: number, userId: string | null | und
     }
 
     // First get the transaction details to get the physical book ID
-    const transaction = await db.select().from(transactions).where(eq(transactions.tid, tid)).limit(1);
+    const transaction = await readTransactionById(tid);
 
-    if (!transaction || transaction.length === 0) {
+
+    console.log("Transaction details:", transaction);
+    
+    if (!transaction) {
       throw new Error("Transaction not found");
     }
 
@@ -34,7 +38,10 @@ export async function acceptTransaction(tid: number, userId: string | null | und
     await updateTransactionsSuccess(tid, "ACCEPTED", userId);
 
     // Update the physical book's borrowed status
-    await updatePhysicalBooks(tid, true);
+    await updatePhysicalBooks(transaction.physicalBookId, true, tid, userId);
+    await updatePhysicalBookActiveNew(tid, userId);
+
+    await notifyBookAccepted(tid, userId /* adminId? */, transaction.userId);
 
     return { success: true, message: "Transaction accepted successfully" };
   } catch (error) {
@@ -50,6 +57,7 @@ export async function rejectTransaction(tid: number, userId: string | null | und
 
   // Call the database update function
   await updateTransactions(tid, "REJECTED", userId);
+   await notifyBookRejected(userId);
   return { success: true, message: "Transaction rejected successfully" };
 }
 
@@ -74,6 +82,7 @@ export async function returnTransaction(tid: number, bookId: number) {
     if (transaction.length) {
       await updateUserScoreOnReturn(transaction[0].userId, tid);
     }
+    await notifyBookReturned(transaction[0].userId);
     return { success: true, message: "Livro marcado como devolvido", res, retPhysicallBook };
   } catch (err) {
     console.error("Erro ao marcar devolução:", err);

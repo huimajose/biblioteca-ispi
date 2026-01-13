@@ -5,6 +5,7 @@ import { books, physicalBooks, userDigitalBooks  } from "@/drizzle/schema";
 import { eq, desc, count, sql, and, asc, like, or, inArray  } from "drizzle-orm";
 import { createTransactions } from "./transactions.crud";
 import { getCurrentDate, getReturnDatePlus7Days } from "@/utils/date";
+import { updatePhysicalBooks } from "./physicalBooks.crud";
 
 
 
@@ -425,10 +426,20 @@ export async function rentBook(bookId: number, userId: string, userName?: string
       return { success: false, message: "Erro ao criar transação de empréstimo" };
     }
 
+    console.log(" Transaction ID: ", trans_result);
+
+await updatePhysicalBooks(
+  updatedPhysicalBook[0].pid,
+  true,
+  trans_result[0].tid,
+  userId
+)
+
+
     return {
       success: true,
       message: `Livro "${book[0].title}" requisitado com sucesso! 📚`,
-      physicalBook: updatedPhysicalBook[0],
+      
     };
   } catch (error) {
     console.error("❌ rentBook error:", error);

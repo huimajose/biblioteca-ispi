@@ -1,0 +1,7 @@
+// src/events/eventTypes.ts
+export enum EventType {
+  BOOK_REQUESTED = "BOOK_REQUESTED",
+  BOOK_ACCEPTED = "BOOK_ACCEPTED",
+  BOOK_REJECTED = "BOOK_REJECTED",
+  BOOK_RETURNED = "BOOK_RETURNED",
+}

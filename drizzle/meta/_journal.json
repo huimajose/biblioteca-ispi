@@ -36,6 +36,20 @@
       "when": 1745923778939,
       "tag": "0004_third_valkyrie",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1768312434523,
+      "tag": "0005_boring_selene",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1768331393122,
+      "tag": "0006_amused_darwin",
+      "breakpoints": true
     }
   ]
 }

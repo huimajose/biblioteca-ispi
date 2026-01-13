@@ -52,7 +52,7 @@ export const createTransactions = async (
       user_name
     };
 
-    const [res] = await db.insert(transactions).values(transaction).returning({
+    const result  = await db.insert(transactions).values(transaction).returning({
       tid: transactions.tid,
       physicalBookId: transactions.physicalBookId,
       status: transactions.status,
@@ -61,8 +61,8 @@ export const createTransactions = async (
       user_name: transactions.user_name
     });
 
-    console.log("createTransactions:", res);
-    return Response.json(res, { status: 201 });
+    console.log("createTransactions:", result);
+    return result;
   } catch (error) {
     console.error("Something Went Wrong in createTransactions:", error);
     return Response.json(

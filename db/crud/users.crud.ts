@@ -100,12 +100,21 @@ export async function verifyAdmin(userId: string) {
 
 
 
-export async function getUserNameById(userId: string) {
+// 🆕 Buscar todos os admins do sistema
+export async function getAllAdmins() {
   try {
-    const [user] = await db.select({ name: users.fullName }).from(users).where(eq(users.clerkId, userId));
-    return user?.name || "Desconhecido";
+    const admins = await db
+      .select({
+        clerkId: users.clerkId,
+        primaryEmail: users.primaryEmail,
+        role: users.role,
+      })
+      .from(users)
+      .where(eq(users.role, "admin"));
+
+    return admins;
   } catch (error) {
-    console.error("Erro ao buscar nome do usuário:", error);
-    return "Erro";
+    console.error("❌ Erro ao buscar admins:", error);
+    return [];
   }
 }

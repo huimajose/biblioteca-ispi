@@ -5,6 +5,7 @@ import Sidebar from "@/components/user/Sidebar";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ToastProvider } from "@/components/ui/ToastContext";
 import { ptPT } from "@clerk/localizations";
+//import NotificationBadge from "@/components/ui/NotificationBadge";
 
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             <Sidebar />
             <div className="flex flex-col p-4 w-full">
               <Header />
+             
               {children}
             </div>
           </main>

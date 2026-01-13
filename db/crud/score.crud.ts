@@ -1,81 +1,99 @@
-import { db } from "@/db"; // seu cliente Drizzle
-import { transactions, physicalBooks, userScores } from "@/db/schema";
+import { db } from "@/db";
+import { transactions, userScores } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-interface UpdateScoreInput {
-  userId: string;
-  transactionId: number;
-}
-
 /**
- * Atualiza a pontuação de um usuário baseado na devolução do livro
- * - Entregou no prazo ou antes: +1 ponto (máx 100)
- * - Entregou atrasado: -1 ponto por dia de atraso (mín 0)
+ * Atualiza a pontuação do usuário quando um livro é devolvido
+ * Regras:
+ * - No prazo ou antes: +1 ponto (máx 100)
+ * - Atraso: -1 ponto por dia (mín 0)
+ * - Só pode ser aplicada UMA vez por transação
  */
-export async function updateUserScore(transactionId: number) {
-  // 1. Buscar a transação e livro físico
-  const tx = await db
+export async function updateUserScoreOnReturn(transactionId: number) {
+  const today = new Date();
+
+  // 1. Buscar transação
+  const [tx] = await db
     .select()
     .from(transactions)
-    .where(eq(transactions.tid, transactionId))
-    .get();
+    .where(eq(transactions.tid, transactionId));
 
   if (!tx) throw new Error("Transação não encontrada");
 
-  const physicalBook = await db
-    .select()
-    .from(physicalBooks)
-    .where(eq(physicalBooks.currTransactionId, transactionId))
-    .get();
+  if (!tx.returnedDate) {
+    throw new Error("Transação ainda não foi devolvida");
+  }
 
-  if (!physicalBook) throw new Error("Livro físico não encontrado");
+  if (tx.scoreApplied) {
+    // já processado, evita duplicação
+    return { userId: tx.userId, pointsApplied: false };
+  }
 
-  const today = new Date();
-  const returnDate = physicalBook.returnDate ? new Date(physicalBook.returnDate) : null;
+  if (!tx.borrowedDate) {
+    throw new Error("borrowedDate inexistente");
+  }
+
   const userId = tx.userId;
-
-  // 2. Buscar ou criar registro de pontuação
-  let userScore = await db.select().from(userScores).where(eq(userScores.userId, userId)).get();
-
-  if (!userScore) {
-    // cria pontuação inicial
-    userScore = {
-      userId,
-      points: 100,
-      lastUpdated: today,
-    };
-    await db.insert(userScores).values(userScore).run();
-  }
-
-  // 3. Calcular variação de pontos
-  let points = userScore.points;
-
-  if (!returnDate) {
-    // Ainda não devolvido: pontos não mudam aqui (ou podemos penalizar por atraso diário com job)
-    return userScore;
-  }
-
   const borrowedDate = new Date(tx.borrowedDate);
-  const maxDays = 15; // ou pegar do systemMetadata se quiser parametrizar
-  const dueDate = new Date(borrowedDate);
-  dueDate.setDate(dueDate.getDate() + maxDays);
+  const returnedDate = new Date(tx.returnedDate);
 
-  if (returnDate <= dueDate) {
-    // devolveu no prazo ou antes
-    points = Math.min(100, points + 1);
+  // 2. Buscar ou criar score
+  const [existingScore] = await db
+    .select()
+    .from(userScores)
+    .where(eq(userScores.userId, userId));
+
+  const currentPoints = existingScore?.points ?? 100;
+
+  // 3. Calcular prazo
+  const MAX_DAYS = 15;
+  const dueDate = new Date(borrowedDate);
+  dueDate.setDate(dueDate.getDate() + MAX_DAYS);
+
+  let newPoints = currentPoints;
+
+  if (returnedDate <= dueDate) {
+    newPoints = Math.min(100, currentPoints + 1);
   } else {
-    // devolveu atrasado: penaliza 1 ponto por dia de atraso
-    const diffTime = returnDate.getTime() - dueDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    points = Math.max(0, points - diffDays);
+    const diffTime = returnedDate.getTime() - dueDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    newPoints = Math.max(0, currentPoints - diffDays);
   }
 
-  // 4. Atualizar pontuação
-  await db
-    .update(userScores)
-    .set({ points, lastUpdated: today })
-    .where(eq(userScores.userId, userId))
-    .run();
+  // 4. Persistir score
+  if (existingScore) {
+    await db
+      .update(userScores)
+      .set({
+        points: newPoints,
+        lastUpdated: today,
+      })
+      .where(eq(userScores.userId, userId));
+  } else {
+    await db.insert(userScores).values({
+      userId,
+      points: newPoints,
+      lastUpdated: today,
+    });
+  }
 
-  return { userId, points };
+  const check = await db
+  .select({ tid: transactions.tid, scoreApplied: transactions.scoreApplied })
+  .from(transactions)
+  .where(eq(transactions.tid, transactionId));
+
+console.log("Transação encontrada para ser pontuada:", check);
+
+
+  // 5. Marcar transação como pontuada
+  await db
+    .update(transactions)
+    .set({ scoreApplied: true })
+    .where(eq(transactions.tid, transactionId));
+
+  return {
+    userId,
+    previousPoints: currentPoints,
+    newPoints,
+  };
 }
