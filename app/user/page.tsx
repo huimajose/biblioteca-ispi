@@ -56,10 +56,6 @@ export default async function UserDashboard() {
   const userDigitalBooks = await getUserDigitalBooks(user.id);
   const userPhysicalBooksCount = await readPhysicalBooksByUser(user.id)
 
-  console.log("User Digital Books:", userDigitalBooks);
-  console.log("User Physical Books:", userPhysicalBooksCount);
-
-
 const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
   return (
     <div className="p-6">
@@ -87,6 +83,10 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
           <div>
             <p className="text-gray-600">Livros com data de entrega expirado</p>
             <p className="text-lg font-medium text-green-600">{overdueBooks.length}</p>
+          </div>
+          <div>
+            <p className="text-gray-600">Pontação</p>
+            <p className="text-lg font-medium text-green-600"><a href="user/borrowings">{myShelfCount}</a></p>
           </div>
          
         </div>
