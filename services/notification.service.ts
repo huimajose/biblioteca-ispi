@@ -43,9 +43,10 @@ const author = bookIdd?.author?.trim();
 /**
  * Notifica o usuário que o livro foi marcado como devolvido
  */
-export async function notifyBookReturned(userId: string) {
+export async function notifyBookReturned(userId: string, pointsEarned?: number) {
   const title = "Livro devolvido";
-  const message = "Seu livro foi marcado como devolvido. Obrigado!";
+  const score = pointsEarned ? ` Você ganhou **${pointsEarned}** pontos!` : "".trim();
+  const message = `Seu livro foi marcado como devolvido${score} Obrigado!`;
 
   await createNotification(userId, title, message);
   sendNotification(userId, title, message);

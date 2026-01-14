@@ -105,5 +105,5 @@ export async function updateUserScoreOnReturn(userId: string, transactionId: num
     });
   }
 
-  return { success: true, pointsDelta };
+  return pointsDelta;
 }

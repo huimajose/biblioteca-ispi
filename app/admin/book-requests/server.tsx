@@ -80,9 +80,11 @@ export async function returnTransaction(tid: number, bookId: number) {
     // Atualiza pontuação do usuário
     const transaction = await db.select().from(transactions).where(eq(transactions.tid, tid));
     if (transaction.length) {
-      await updateUserScoreOnReturn(transaction[0].userId, tid);
+      const scoreResult = await updateUserScoreOnReturn(transaction[0].userId, tid);
+
+ await notifyBookReturned(transaction[0].userId, scoreResult);
     }
-    await notifyBookReturned(transaction[0].userId);
+   
     return { success: true, message: "Livro marcado como devolvido", res, retPhysicallBook };
   } catch (err) {
     console.error("Erro ao marcar devolução:", err);

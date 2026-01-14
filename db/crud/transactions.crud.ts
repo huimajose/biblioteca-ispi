@@ -156,6 +156,7 @@ export const updateTransactionsSuccess = async (tid: number, status: string, adm
         adminId,
         borrowedDate: borrowedDate.toISOString(),
         returnedDate: returnedDate.toISOString(),
+        scoreApplied: true,
       })
       .where(eq(transactions.tid, tid));
 
