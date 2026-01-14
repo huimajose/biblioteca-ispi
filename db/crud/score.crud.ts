@@ -97,3 +97,38 @@ console.log("Transação encontrada para ser pontuada:", check);
     newPoints,
   };
 }
+
+
+/**
+ * Retorna o total de pontos atual do usuário
+ * - Se não existir score, cria com valor inicial (100)
+ */
+export async function getUserTotalPoints(userId: string) {
+  const [score] = await db
+    .select()
+    .from(userScores)
+    .where(eq(userScores.userId, userId));
+
+  if (!score) {
+    const initialPoints = 100;
+
+    await db.insert(userScores).values({
+      userId,
+      points: initialPoints,
+      lastUpdated: new Date(),
+    });
+
+    return {
+      userId,
+      points: initialPoints,
+      initialized: true,
+    };
+  }
+
+  return {
+    userId,
+    points: score.points,
+    lastUpdated: score.lastUpdated,
+    initialized: false,
+  };
+}

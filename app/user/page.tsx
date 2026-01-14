@@ -8,6 +8,7 @@ import { readPhysicalBooks, readDigitalBooks, readPhysicalBooksByUser } from "@/
 import { systemMetadata } from "@/db/schema";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
+import { getUserTotalPoints } from "@/db/crud/score.crud";
 
 export default async function UserDashboard() {
   const user = await currentUser();
@@ -55,6 +56,7 @@ export default async function UserDashboard() {
 
   const userDigitalBooks = await getUserDigitalBooks(user.id);
   const userPhysicalBooksCount = await readPhysicalBooksByUser(user.id)
+  const userScore = await getUserTotalPoints(user.id);
 
 const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
   return (
@@ -86,7 +88,19 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
           </div>
           <div>
             <p className="text-gray-600">Pontuação</p>
-            <p className="text-lg font-medium text-green-600"><a href="user/borrowings">{myShelfCount}</a></p>
+            
+            <p
+  className={`text-lg font-medium ${
+    userScore.points >= 80
+      ? "text-green-600"
+      : userScore.points >= 50
+      ? "text-yellow-600"
+      : "text-red-600"
+  }`}
+>
+  {userScore.points} pts
+</p>
+
           </div>
          
         </div>
