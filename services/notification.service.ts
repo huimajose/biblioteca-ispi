@@ -27,7 +27,7 @@ export async function notifyNewTransaction(transactionId: number, userId: string
  */
 export async function notifyBookAccepted(transactionId: number, adminId: string, userId: string) {
   const title = "Requisição aceite";
-  const message = `Seu pedido do livro foi aceito, Dirija-se a biblioteca para pegar o exemplar.`;
+  const message = `Seu pedido foi aceito, Dirija-se a biblioteca para pegar o exemplar.`;
 
   await createNotification(userId, title, message);
   sendNotification(userId, title, message);

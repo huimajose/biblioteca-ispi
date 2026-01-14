@@ -429,7 +429,7 @@ export async function rentBook(bookId: number, userId: string, userName?: string
     console.log(" Transaction ID: ", trans_result);
 
 await updatePhysicalBooks(
-  updatedPhysicalBook[0].pid,
+  bookToRent.pid,
   true,
   trans_result[0].tid,
   userId

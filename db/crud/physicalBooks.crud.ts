@@ -69,8 +69,81 @@ export const readDigitalBooks = async (userIdd: string) => {
 };
 
 
-
 export const updatePhysicalBooks = async (
+  pid: number,
+  borrowed: boolean,
+  currTransactionId: number | null,
+  userId: string | null = null
+) => {
+  try {
+    // 1️⃣ Buscar livro físico
+const physicalBook = await db
+  .select({ bookId: physicalBooks.bookId })
+  .from(physicalBooks)
+  .where(eq(physicalBooks.pid, pid))
+  .limit(1);
+
+if (!physicalBook.length) {
+  throw new Error(`Livro físico não encontrado (pid=${pid})`);
+}
+
+const bookId = physicalBook[0].bookId;
+
+    // 2️⃣ Calcular data de devolução
+    const returnDate = borrowed
+      ? new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+      : null;
+
+    // 3️⃣ Atualizar livro físico
+    const updateResult = await db
+      .update(physicalBooks)
+      .set({
+        borrowed,
+        userId: borrowed ? userId : null,
+        returnDate: borrowed ? returnDate?.toISOString() : null,
+        currTransactionId: borrowed ? currTransactionId : null,
+      })
+      .where(eq(physicalBooks.pid, pid))
+      .returning();
+
+    if (!updateResult.length) {
+      throw new Error(`Falha ao atualizar livro físico (pid=${pid})`);
+    }
+
+    // 4️⃣ Recalcular cópias disponíveis
+    const availableCount = await db
+      .select({
+        count: sql<number>`cast(count(*) as integer)`,
+      })
+      .from(physicalBooks)
+      .where(
+        and(
+          eq(physicalBooks.bookId, bookId),
+          eq(physicalBooks.borrowed, false)
+        )
+      );
+
+    // 5️⃣ Atualizar tabela books
+    await db
+      .update(books)
+      .set({ availableCopies: availableCount[0].count })
+      .where(eq(books.id, bookId));
+
+    // 6️⃣ Retorno explícito
+    return {
+      success: true,
+      physicalBook: updateResult[0],
+      availableCopies: availableCount[0].count,
+    };
+  } catch (error) {
+    console.error("❌ updatePhysicalBooks error:", error);
+    throw error;
+  }
+};
+
+
+
+export const updatePhysicalBookToTransaction = async (
   pid: number,
   borrowed: boolean,
   currTransactionId: number | null,

@@ -1,7 +1,7 @@
 "use server";
 
 import { readTransactions, updateTransactions, updateTransactionsSuccess, returnTransactionCrud, readTransactionById } from "@/db/crud/transactions.crud"; // Assuming this is where the updateTransactions function resides
-import { updatePhysicalBooks, resetPhysicalBook, checkAvailablePhysicalBooks, updatePhysicalBookActive, updatePhysicalBookActiveNew  } from "@/db/crud/physicalBooks.crud";
+import { updatePhysicalBookToTransaction, resetPhysicalBook, updatePhysicalBookActiveNew  } from "@/db/crud/physicalBooks.crud";
 import { transactions } from "@/drizzle/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
@@ -38,7 +38,7 @@ export async function acceptTransaction(tid: number, userId: string | null | und
     await updateTransactionsSuccess(tid, "ACCEPTED", userId);
 
     // Update the physical book's borrowed status
-    await updatePhysicalBooks(transaction.physicalBookId, true, tid, userId);
+    //await updatePhysicalBookToTransaction(transaction.physicalBookId, true, tid, userId);
     await updatePhysicalBookActiveNew(tid, userId);
 
     await notifyBookAccepted(tid, userId /* adminId? */, transaction.userId);
