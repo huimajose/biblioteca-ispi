@@ -9,6 +9,7 @@ import { systemMetadata } from "@/db/schema";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
 import { getUserTotalPoints } from "@/db/crud/score.crud";
+import { Handshake, PartyPopper, TriangleAlert } from "lucide-react";
 
 export default async function UserDashboard() {
   const user = await currentUser();
@@ -86,22 +87,40 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
             <p className="text-gray-600">Livros com data de entrega expirado</p>
             <p className="text-lg font-medium text-green-600">{overdueBooks.length}</p>
           </div>
-          <div>
-            <p className="text-gray-600">Pontuação</p>
-            
-            <p
-  className={`text-lg font-medium ${
-    userScore.points >= 80
-      ? "text-green-600"
-      : userScore.points >= 50
-      ? "text-yellow-600"
-      : "text-red-600"
-  }`}
->
-  {userScore.points} pts
-</p>
+          
 
-          </div>
+<div>
+  <p className="text-gray-600">Pontuação</p>
+  <div className="flex items-center gap-2 mt-1">
+    <span
+      className={`text-lg font-medium ${
+        userScore.points >= 80
+          ? "text-green-600"
+          : userScore.points >= 50
+          ? "text-yellow-600"
+          : "text-red-600"
+      }`}
+    >
+      {userScore.points} pts
+    </span>
+
+    {userScore.points >= 80 ? (
+      <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 flex items-center gap-1">
+        Leitor Exemplar <PartyPopper className="w-4 h-4" />
+      </span>
+    ) : userScore.points >= 50 ? (
+      <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 flex items-center gap-1">
+        Leitor Regular <Handshake className="w-4 h-4" />
+      </span>
+    ) : (
+      <span className="px-2 py-1 rounded-full bg-red-100 text-red-800 flex items-center gap-1">
+        Atenção <TriangleAlert className="w-4 h-4" />
+      </span>
+    )}
+  </div>
+</div>
+
+         
          
         </div>
       </div>
