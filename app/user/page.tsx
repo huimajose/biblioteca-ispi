@@ -10,6 +10,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
 import { getUserTotalPoints } from "@/db/crud/score.crud";
 import { Handshake, PartyPopper, TriangleAlert } from "lucide-react";
+import SuggestedBooks from "@/components/user/SuggestedBooks";
 
 export default async function UserDashboard() {
   const user = await currentUser();
@@ -177,6 +178,9 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
           </div>
         </div>
       )}
+
+      <SuggestedBooks userId={user.id} />
+
     </div>
   );
 } 
