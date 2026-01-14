@@ -3,6 +3,7 @@
 import { createNotification } from "./actions"; // sua função DB
 import { getAllAdmins } from "@/db/crud/users.crud";
 import { sendNotification } from "@/app/realtime/socket";
+import { fetchBookById } from "@/db/crud/books.crud";
 
 /**
  * Notifica todos os admins sobre um novo pedido de livro
@@ -25,12 +26,18 @@ export async function notifyNewTransaction(transactionId: number, userId: string
 /**
  * Notifica o usuário que o livro foi aceito
  */
-export async function notifyBookAccepted(transactionId: number, adminId: string, userId: string) {
-  const title = "Requisição aceite";
-  const message = `Seu pedido foi aceito, Dirija-se a biblioteca para pegar o exemplar.`;
+export async function notifyBookAccepted(transactionId: number, adminId: string, userId: string, bookId: number) {
+  const bookIdd = await fetchBookById(bookId);
 
-  await createNotification(userId, title, message);
-  sendNotification(userId, title, message);
+
+const bookTitle = bookIdd?.title?.trim();
+const author = bookIdd?.author?.trim();
+
+  const tittle = "Requisição aceite";
+  const message = `Seu pedido **${bookTitle}** do autor **${author}** foi aceito. Dirija-se à biblioteca para pegar o exemplar.`;
+
+  await createNotification(userId, tittle, message);
+  sendNotification(userId, tittle, message);
 }
 
 /**

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import ReactMarkdown from "react-markdown";
+
 
 export interface Notification {
   id: number;
@@ -78,7 +80,20 @@ const NotificationBell = () => {
                 }`}
               >
                 <p className="font-semibold text-gray-800">{n.title}</p>
-                <p className="text-sm text-gray-600">{n.message}</p>
+                <ReactMarkdown
+  components={{
+    strong: ({ children }) => (
+      <strong className="font-semibold text-gray-900">
+        {children}
+      </strong>
+    ),
+  }}
+ 
+>
+  {n.message}
+</ReactMarkdown>
+
+
                 <p className="text-xs text-gray-400">
                   {new Date(n.createdAt).toLocaleString()}
                 </p>

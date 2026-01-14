@@ -161,13 +161,6 @@ if (!physicalBook.length) {
   throw new Error(`Livro físico não encontrado (pid=${pid})`);
 }
 
-const bookId = physicalBook[0].bookId;
-
-    // 2️⃣ Calcular data de devolução
-    const returnDate = borrowed
-      ? new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
-      : null;
-
     // 3️⃣ Atualizar livro físico
     const updateResult = await db
       .update(physicalBooks)
@@ -184,30 +177,12 @@ const bookId = physicalBook[0].bookId;
       throw new Error(`Falha ao atualizar livro físico (pid=${pid})`);
     }
 
-    // 4️⃣ Recalcular cópias disponíveis
-    const availableCount = await db
-      .select({
-        count: sql<number>`cast(count(*) as integer)`,
-      })
-      .from(physicalBooks)
-      .where(
-        and(
-          eq(physicalBooks.bookId, bookId),
-          eq(physicalBooks.borrowed, false)
-        )
-      );
-
-    // 5️⃣ Atualizar tabela books
-    await db
-      .update(books)
-      .set({ availableCopies: availableCount[0].count })
-      .where(eq(books.id, bookId));
+    
 
     // 6️⃣ Retorno explícito
     return {
       success: true,
       physicalBook: updateResult[0],
-      availableCopies: availableCount[0].count,
     };
   } catch (error) {
     console.error("❌ updatePhysicalBooks error:", error);

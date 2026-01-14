@@ -41,7 +41,7 @@ export async function acceptTransaction(tid: number, userId: string | null | und
     //await updatePhysicalBookToTransaction(transaction.physicalBookId, true, tid, userId);
     await updatePhysicalBookActiveNew(tid, userId);
 
-    await notifyBookAccepted(tid, userId /* adminId? */, transaction.userId);
+    await notifyBookAccepted(tid, userId /* adminId? */, transaction.userId, transaction.physicalBookId);
 
     return { success: true, message: "Transaction accepted successfully" };
   } catch (error) {
