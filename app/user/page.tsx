@@ -179,7 +179,7 @@ const myShelfCount = userDigitalBooks.length + userPhysicalBooksCount.length;
         </div>
       )}
 
-      <SuggestedBooks userId={user.id} />
+      <SuggestedBooks userId={user.id} userScore={userScore} />
 
     </div>
   );

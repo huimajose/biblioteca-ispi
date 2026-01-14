@@ -118,3 +118,20 @@ export async function getAllAdmins() {
     return [];
   }
 }
+
+// 🆕 Função para buscar a role de um usuário
+export const getUserRole = async (clerkId: string): Promise<string | null> => {
+  try {
+    const [user] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.clerkId, clerkId));
+
+    if (!user) return null;
+
+    return user.role;
+  } catch (error: any) {
+    console.error("❌ Erro ao buscar role do usuário:", error.message || error);
+    return null;
+  }
+};

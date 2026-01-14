@@ -86,3 +86,12 @@ export const notifications = pgTable("notifications", {
   read: boolean("read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+
+export const studentVerifications = pgTable("student_verifications", {
+  id: serial("id").primaryKey(),
+  clerkId: varchar("clerk_id", { length: 255 }).notNull(),
+  studentNumber: varchar("student_number", { length: 50 }).notNull(),
+  status: varchar("status", { length: 20 }).notNull(), // pending, approved, rejected
+  createdAt: timestamp("created_at").notNull(),
+});

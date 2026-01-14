@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // middleware.ts
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -19,12 +20,6 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, request) => {
 
-  console.log(
-    "🛠️ Rota requisitada:",
-    request.nextUrl.pathname,
-    "é pública?",
-    isPublicRoute(request)
-  );
 
   
   // 1) libera rotas públicas
@@ -48,18 +43,18 @@ export default clerkMiddleware(async (auth, request) => {
     });
 
     if (!res.ok) {
-      console.error("Erro na resposta verify-role:", res.status);
+    
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
     const { role } = await res.json();
-    console.log("🧠 Role recebida no middleware:", role);
+    
 
     if (role !== "admin") {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   } catch (err) {
-    console.error("❌ Erro no middleware:", err);
+    
     return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 }
@@ -81,12 +76,12 @@ export default clerkMiddleware(async (auth, request) => {
       }
 
       const { role } = await res.json();
-      if (role !== "user" && role !== "estudante" && role !== "admin") {
+     if (!["user", "student", "admin"].includes(role)) {
         // admin também pode acessar, se quiser permitir
         return NextResponse.redirect(new URL("/unauthorized", request.url));
       }
     } catch (err) {
-      console.error("Erro ao verificar role no middleware:", err);
+      
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
